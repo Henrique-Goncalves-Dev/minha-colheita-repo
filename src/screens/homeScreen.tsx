@@ -1,34 +1,150 @@
-import { User, Sprout, TreePine, Star, DollarSign, Heart, Mic } from 'lucide-react';
-import { AudioButton } from '../components/AudioButton';
-import { ActionCard } from '../components/ActionCard';
+import {
+  User,
+  Heart,
+  Star,
+  Home,
+  Briefcase,
+  Smile,
+  Volume2,
+  Mic,
+  Sprout,
+  TreePine,
+  DollarSign,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export function HomeScreen() {
+interface HomeScreenProps {
+  userName: string;
+}
+
+const cards = [
+  { icon: Sprout, label: "Plantio", bg: "#35504A" },
+  { icon: TreePine, label: "Plantação", bg: "#4a6e65" },
+  //{ icon: Star, label: "Tempo de Plantação", bg: "#5d8a7d" },
+  { icon: DollarSign, label: "Renda", bg: "#3a7a5c" },
+  { icon: Heart, label: "Perfil", bg: "#2d6b5a" },
+  //{ icon: User, label: "Em breve", bg: "#35504A" },
+];
+
+const speak = (text: string) => {
+  if ("speechSynthesis" in window) {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "pt-BR";
+    u.rate = 0.8;
+    speechSynthesis.speak(u);
+  }
+};
+
+const green = "#35504A";
+
+export function HomeScreen({ userName }: HomeScreenProps) {
+  const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-[#EEF2F0] flex flex-col relative pb-24">
+    <div
+      className="flex flex-col min-h-screen relative pb-28"
+      style={{
+        background:
+          "linear-gradient(to bottom, #e8efed, #f5f8f7)",
+      }}
+    >
       {/* Header */}
-      <header className="flex justify-between items-center p-6 mb-2">
-        <button className="bg-[#345348] p-3 rounded-full text-white">
-          <User size={28} />
+      <div className="flex items-center gap-3 px-6 pt-8 pb-4">
+        <div
+          className="w-12 h-12 rounded-full flex items-center justify-center shadow-md"
+          style={{
+            background: `linear-gradient(135deg, ${green}, #4a6e65)`,
+          }}
+        >
+          <User className="w-6 h-6 text-white" />
+        </div>
+        <button
+          onClick={() =>
+            speak(
+              `Olá ${userName}. Esta é sua tela principal. Toque no alto falante de cada item para ouvir o que ele faz.`,
+            )
+          }
+          className="ml-auto rounded-full p-3 shadow-md active:scale-95 transition-all"
+          style={{ backgroundColor: green }}
+        >
+          <Volume2 className="w-6 h-6 text-white" />
         </button>
-        <AudioButton variant="circle" className="w-12 h-12" />
-      </header>
-
-      {/* Grid de Cards */}
-      <div className="px-6 grid grid-cols-2 gap-x-4 gap-y-6 max-w-md mx-auto w-full">
-        <ActionCard title="Plantio" icon={<Sprout size={48} />} bgColor="bg-[#345348]" />
-        <ActionCard title="Plantação" icon={<TreePine size={48} />} bgColor="bg-[#4A6F62]" />
-        
-        <ActionCard title="Tempo de Plantação" icon={<Star size={48} />} bgColor="bg-[#658B7D]" />
-        <ActionCard title="Renda" icon={<DollarSign size={48} />} bgColor="bg-[#3A7055]" />
-        
-        <ActionCard title="Perfil" icon={<Heart size={48} />} bgColor="bg-[#2D6A53]" />
-        <ActionCard title="Em breve" icon={<User size={48} />} bgColor="bg-[#3A4A45]" />
       </div>
 
-      {/* Botão Flutuante de Microfone */}
-      <div className="fixed bottom-6 left-0 right-0 flex justify-center pointer-events-none">
-        <button className="bg-[#345348] text-white p-5 rounded-full shadow-lg pointer-events-auto active:scale-95 transition-transform">
-          <Mic size={36} />
+      {/* Cards 2x2 */}
+      <div className="flex flex-col gap-6 px-6 mt-4">
+        {Array.from({
+          length: Math.ceil(cards.length / 2),
+        }).map((_, rowIdx) => {
+          const pair = cards.slice(rowIdx * 2, rowIdx * 2 + 2);
+          return (
+            <div
+              key={rowIdx}
+              className="grid grid-cols-2 gap-4"
+            >
+              {pair.map((card, i) => {
+                const Icon = card.icon;
+                const idx = rowIdx * 2 + i;
+                return (
+                  <div
+                    key={idx}
+                    className="flex flex-col gap-2"
+                  >
+                    {/* Speaker + label */}
+                    <button
+                      onClick={() => speak(card.label)}
+                      className="flex items-center gap-2 self-start px-2 active:scale-95 transition-all"
+                    >
+                      <Volume2
+                        className="w-5 h-5"
+                        style={{ color: green }}
+                      />
+                      <span
+                        style={{
+                          color: green,
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {card.label}
+                      </span>
+                    </button>
+                    {/* Card */}
+                    <button
+  onClick={() => {
+    if (card.label === "Plantio") {
+      navigate("/add-plant");
+    }
+  }}
+  className="aspect-square rounded-3xl flex items-center justify-center shadow-lg active:scale-90 transition-all hover:brightness-110"
+  style={{ backgroundColor: card.bg }}
+>
+                      <Icon
+                        className="w-14 h-14 text-white"
+                        strokeWidth={1.5}
+                      />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Floating mic */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 max-w-[430px] w-full flex justify-center pointer-events-none">
+        <button
+          onClick={() =>
+            speak("Microfone ativado. Diga o que deseja fazer.")
+          }
+          className="pointer-events-auto rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all hover:brightness-110"
+          style={{
+            width: 72,
+            height: 72,
+            background: `linear-gradient(135deg, ${green}, #4a6e65)`,
+          }}
+        >
+          <Mic className="w-9 h-9 text-white" />
         </button>
       </div>
     </div>
