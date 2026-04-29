@@ -6,6 +6,7 @@ import { NameScreen } from "./screens/identificationScreen";
 import { PinScreen } from "./screens/pinScreen";
 import { HomeScreen } from "./screens/homeScreen";
 import { AddPlantScreen } from "./screens/addPlant";
+import { PlantScreen } from "./screens/plant";
 
 // Criamos esse componente interno para podermos usar o `useNavigate`
 function AppRoutes() {
@@ -45,6 +46,10 @@ function AppRoutes() {
       <Route
         path="/add-plant"
         element={<AddPlantScreen />}
+      />
+      <Route
+        path="/plant"
+        element={<PlantScreen />}
       />
     </Routes>
   );

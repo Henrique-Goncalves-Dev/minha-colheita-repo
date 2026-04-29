@@ -110,14 +110,16 @@ export function HomeScreen({ userName }: HomeScreenProps) {
                     </button>
                     {/* Card */}
                     <button
-  onClick={() => {
-    if (card.label === "Plantio") {
-      navigate("/add-plant");
-    }
-  }}
-  className="aspect-square rounded-3xl flex items-center justify-center shadow-lg active:scale-90 transition-all hover:brightness-110"
-  style={{ backgroundColor: card.bg }}
->
+                      onClick={() => {
+                        if (card.label === "Plantio") {
+                          navigate("/add-plant");
+                        } else if (card.label === "Plantação") {
+                          navigate("/plant");
+                        }
+                      }}
+                      className="aspect-square rounded-3xl flex items-center justify-center shadow-lg active:scale-90 transition-all hover:brightness-110"
+                      style={{ backgroundColor: card.bg }}
+                    >
                       <Icon
                         className="w-14 h-14 text-white"
                         strokeWidth={1.5}
