@@ -33,9 +33,8 @@ async def registro(dados: RegistroRequest, db: AsyncSession = Depends(get_db)):
 @router.post("/login", response_model=Token)
 async def login(dados: LoginRequest, db: AsyncSession = Depends(get_db)):
     usuario = await get_usuario_by_telefone(db, dados.telefone)
-    if not usuario or not verify_pin(dados.pin, usuario.pin):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Telefone ou PIN incorretos",
-        )
+    if not usuario:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado")
+    if not verify_pin(dados.pin, usuario.pin):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="PIN incorreto")
     return Token(access_token=create_access_token(usuario.id))
