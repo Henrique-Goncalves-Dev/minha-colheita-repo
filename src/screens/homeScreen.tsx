@@ -19,7 +19,7 @@ export function HomeScreen() {
       {/* Grid de Cards */}
       <div className="px-6 grid grid-cols-2 gap-x-4 gap-y-6 max-w-md mx-auto w-full">
         <ActionCard title="Plantio" icon={<Sprout size={48} />} bgColor="bg-[#345348]" onClick={() => navigate('/plantio')} />
-        <ActionCard title="Plantação" icon={<TreePine size={48} />} bgColor="bg-[#4A6F62]" />
+        <ActionCard title="Plantação" icon={<TreePine size={48} />} bgColor="bg-[#4A6F62]" onClick={() => navigate('/plantacao')} />
         
         <ActionCard title="Tempo de Plantação" icon={<Star size={48} />} bgColor="bg-[#658B7D]" />
         <ActionCard title="Renda" icon={<DollarSign size={48} />} bgColor="bg-[#3A7055]" />
