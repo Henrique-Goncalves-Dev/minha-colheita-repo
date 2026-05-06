@@ -44,3 +44,34 @@ export async function entrar(telefone: string, pin: string): Promise<void> {
   const data = await handleResponse<{ access_token: string }>(res);
   saveToken(data.access_token);
 }
+
+export interface PlantioPayload {
+  nome_semente: string;
+  data_plantacao: string | null;
+  quantidade: number;
+  custo: number;
+}
+
+export interface PlantioResponse {
+  id: number;
+  nome_semente: string;
+  data_plantacao: string | null;
+  quantidade: number;
+  custo: number;
+}
+
+export async function criarPlantio(dados: PlantioPayload): Promise<PlantioResponse> {
+  const res = await fetch(`${BASE_URL}/plantios`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(dados),
+  });
+  return handleResponse<PlantioResponse>(res);
+}
+
+export async function listarPlantios(): Promise<PlantioResponse[]> {
+  const res = await fetch(`${BASE_URL}/plantios`, {
+    headers: { ...authHeaders() },
+  });
+  return handleResponse<PlantioResponse[]>(res);
+}

@@ -1,8 +1,11 @@
+import { useNavigate } from 'react-router-dom';
 import { User, Sprout, TreePine, Star, DollarSign, Heart, Mic } from 'lucide-react';
 import { AudioButton } from '../components/AudioButton';
 import { ActionCard } from '../components/ActionCard';
 
 export function HomeScreen() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-[#EEF2F0] flex flex-col relative pb-24">
       {/* Header */}
@@ -15,7 +18,7 @@ export function HomeScreen() {
 
       {/* Grid de Cards */}
       <div className="px-6 grid grid-cols-2 gap-x-4 gap-y-6 max-w-md mx-auto w-full">
-        <ActionCard title="Plantio" icon={<Sprout size={48} />} bgColor="bg-[#345348]" />
+        <ActionCard title="Plantio" icon={<Sprout size={48} />} bgColor="bg-[#345348]" onClick={() => navigate('/plantio')} />
         <ActionCard title="Plantação" icon={<TreePine size={48} />} bgColor="bg-[#4A6F62]" />
         
         <ActionCard title="Tempo de Plantação" icon={<Star size={48} />} bgColor="bg-[#658B7D]" />
