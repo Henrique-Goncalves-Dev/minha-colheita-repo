@@ -4,11 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
+### Frontend
 ```bash
-npm run dev       # Start dev server (Vite, hot reload)
+npm run dev       # Start dev server (Vite, hot reload) — http://localhost:5173
 npm run build     # Type-check + production build (tsc -b && vite build)
 npm run lint      # ESLint
 npm run preview   # Serve production build locally
+```
+
+### Backend
+```bash
+cd backend
+python3 -m uvicorn app.main:app --port 8000 --reload  # http://localhost:8000
+                                                       # Swagger: http://localhost:8000/docs
+```
+
+### Resetar banco de dados (ex: usuário esqueceu o PIN)
+```bash
+rm backend/colheita.db   # banco é recriado automaticamente no próximo startup
 ```
 
 No test framework is configured.
@@ -25,22 +38,35 @@ The hook does nothing when the working tree is already clean.
 
 ### Routing (`src/App.tsx`)
 
-Three routes via React Router v7:
+Four routes via React Router v7:
 
 | Path | Screen | Purpose |
 |---|---|---|
 | `/` | `IdentificationScreen` | Name + phone input |
 | `/pin` | `PinScreen` | 4-digit PIN entry |
 | `/dashboard` | `HomeScreen` | Main action grid |
+| `/plantio` | `PlantioScreen` | Register a new planting |
 
-Navigation is always forward (`/` → `/pin` → `/dashboard`); the back button on `PinScreen` uses `navigate(-1)`.
+Navigation is always forward (`/` → `/pin` → `/dashboard`); the back button on `PinScreen` uses `navigate(-1)`. Nome and telefone are passed from `IdentificationScreen` to `PinScreen` via React Router location state.
 
 ### Component roles
 
 - **`AudioButton`** — plays audio instructions; two variants: `pill` (with waveform label) and `circle` (icon only). Appears on every screen.
-- **`ActionCard`** — a square tappable card used in the dashboard grid; accepts `title`, `icon` (ReactNode), and optional `bgColor` (Tailwind class).
-- **`CustomInput`** — labeled text/tel input with a leading icon; used only on `IdentificationScreen`.
+- **`ActionCard`** — a square tappable card used in the dashboard grid; accepts `title`, `icon` (ReactNode), optional `bgColor` (Tailwind class), and optional `onClick`.
+- **`CustomInput`** — labeled text/tel input with a leading icon; accepts `value` and `onChange` for controlled usage.
 - **`PinPad`** — numeric keypad (0–9 + delete + confirm) rendered as a 3-column grid; state lives in `PinScreen`.
+
+### Frontend API service (`src/services/api.ts`)
+
+Centralizes all HTTP calls to the backend. Key exports:
+
+- `registrar(nome, telefone, pin)` — POST /auth/registro
+- `entrar(telefone, pin)` — POST /auth/login, saves JWT to `localStorage` under key `mc_token`
+- `criarPlantio(dados)` — POST /plantios
+- `listarPlantios()` — GET /plantios
+- `getToken()` / `authHeaders()` — retrieves token and builds Authorization header
+
+Base URL defaults to `http://localhost:8000/api/v1`; override with `VITE_API_URL` env var.
 
 ### Styling
 
@@ -150,12 +176,11 @@ backend/
 
 ### Fluxo de autenticação
 
-1. `IdentificationScreen` → usuário informa nome + telefone (frontend precisa adicionar `useState` nesses campos)
-2. `PinScreen` → frontend chama `POST /api/v1/auth/login` com `{ telefone, pin }`
-3. Backend valida PIN via bcrypt, retorna JWT
-4. JWT é salvo no `localStorage` e enviado como `Authorization: Bearer <token>` em todas as requisições
-
-Primeiro acesso: frontend chama `POST /api/v1/auth/registro` com `{ nome, telefone, pin }` antes do login.
+1. `IdentificationScreen` → usuário informa nome + telefone; ao avançar, ambos são passados via React Router state para `PinScreen`
+2. `PinScreen` → ao confirmar o PIN, tenta `POST /api/v1/auth/login`
+   - **404** → telefone não existe → chama `POST /api/v1/auth/registro` automaticamente, depois faz login (primeiro acesso transparente para o usuário)
+   - **401** → PIN errado → exibe erro e reseta os círculos do PIN em vermelho
+   - **200** → JWT salvo em `localStorage` (`mc_token`) → navega para `/dashboard`
 
 ### Dependências Python (`backend/requirements.txt`)
 
