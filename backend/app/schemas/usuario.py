@@ -41,6 +41,16 @@ class UsuarioResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class PerfilResponse(BaseModel):
+    id: int
+    nome: str
+    telefone: str
+    total_plantios: int
+    total_sementes_plantadas: int
+    total_vendas: int
+    total_arrecadado: float
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"

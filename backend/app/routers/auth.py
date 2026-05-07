@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.dependencies import get_db
+from app.dependencies import get_db, get_current_user
+from app.models.plantio import Plantio
 from app.models.usuario import Usuario
-from app.schemas.usuario import LoginRequest, RegistroRequest, Token, UsuarioResponse
+from app.models.venda import Venda
+from app.schemas.usuario import LoginRequest, PerfilResponse, RegistroRequest, Token, UsuarioResponse
 from app.services.auth_service import (
     create_access_token,
     get_usuario_by_telefone,
@@ -38,3 +41,35 @@ async def login(dados: LoginRequest, db: AsyncSession = Depends(get_db)):
     if not verify_pin(dados.pin, usuario.pin):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="PIN incorreto")
     return Token(access_token=create_access_token(usuario.id))
+
+
+@router.get("/me", response_model=PerfilResponse)
+async def me(
+    db: AsyncSession = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user),
+):
+    plantio_agg = await db.execute(
+        select(
+            func.count(Plantio.id),
+            func.coalesce(func.sum(Plantio.quantidade), 0),
+        ).where(Plantio.id_usuario == usuario.id)
+    )
+    total_plantios, total_sementes = plantio_agg.one()
+
+    venda_agg = await db.execute(
+        select(
+            func.count(Venda.id),
+            func.coalesce(func.sum(Venda.valor_recebido), 0.0),
+        ).where(Venda.id_usuario == usuario.id)
+    )
+    total_vendas, total_arrecadado = venda_agg.one()
+
+    return PerfilResponse(
+        id=usuario.id,
+        nome=usuario.nome,
+        telefone=usuario.telefone,
+        total_plantios=int(total_plantios or 0),
+        total_sementes_plantadas=int(total_sementes or 0),
+        total_vendas=int(total_vendas or 0),
+        total_arrecadado=float(total_arrecadado or 0.0),
+    )
