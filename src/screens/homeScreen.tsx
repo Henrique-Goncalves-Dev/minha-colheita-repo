@@ -10,7 +10,7 @@ export function HomeScreen() {
     <div className="min-h-screen bg-[#EEF2F0] flex flex-col relative pb-24">
       {/* Header */}
       <header className="flex justify-between items-center p-6 mb-2">
-        <button className="bg-[#345348] p-3 rounded-full text-white">
+        <button onClick={() => navigate('/perfil')} className="bg-[#345348] p-3 rounded-full text-white active:scale-95 transition-transform">
           <User size={28} />
         </button>
         <AudioButton variant="circle" className="w-12 h-12" />
@@ -20,11 +20,11 @@ export function HomeScreen() {
       <div className="px-6 grid grid-cols-2 gap-x-4 gap-y-6 max-w-md mx-auto w-full">
         <ActionCard title="Plantio" icon={<Sprout size={48} />} bgColor="bg-[#345348]" onClick={() => navigate('/plantio')} />
         <ActionCard title="Plantação" icon={<TreePine size={48} />} bgColor="bg-[#4A6F62]" onClick={() => navigate('/plantacao')} />
-        
-        <ActionCard title="Tempo de Plantação" icon={<Star size={48} />} bgColor="bg-[#658B7D]" />
-        <ActionCard title="Renda" icon={<DollarSign size={48} />} bgColor="bg-[#3A7055]" />
-        
-        <ActionCard title="Perfil" icon={<Heart size={48} />} bgColor="bg-[#2D6A53]" />
+
+        <ActionCard title="Tempo de Plantação" icon={<Star size={48} />} bgColor="bg-[#658B7D]" onClick={() => navigate('/tempo-plantacao')} />
+        <ActionCard title="Renda" icon={<DollarSign size={48} />} bgColor="bg-[#3A7055]" onClick={() => navigate('/renda')} />
+
+        <ActionCard title="Perfil" icon={<Heart size={48} />} bgColor="bg-[#2D6A53]" onClick={() => navigate('/perfil')} />
         <ActionCard title="Em breve" icon={<User size={48} />} bgColor="bg-[#3A4A45]" />
       </div>
 

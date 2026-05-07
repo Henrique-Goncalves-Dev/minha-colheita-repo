@@ -3,7 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_db, get_current_user
 from app.models.usuario import Usuario
 from app.schemas.plantio import PlantioCreate, PlantioUpdate, PlantioResponse
-from app.services import plantio_service
+from app.schemas.venda import EstoqueItem
+from app.services import plantio_service, venda_service
 from app.services.plantio_service import _to_response
 
 router = APIRouter(prefix="/plantios", tags=["plantios"])
@@ -24,6 +25,14 @@ async def listar(
     usuario: Usuario = Depends(get_current_user),
 ):
     return await plantio_service.listar_plantios(db, usuario.id)
+
+
+@router.get("/estoque", response_model=list[EstoqueItem])
+async def estoque(
+    db: AsyncSession = Depends(get_db),
+    usuario: Usuario = Depends(get_current_user),
+):
+    return await venda_service.estoque(db, usuario.id)
 
 
 @router.get("/{plantio_id}", response_model=PlantioResponse)
