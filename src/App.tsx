@@ -1,73 +1,79 @@
 import { useState } from "react";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { Login } from "./screens/Login";
+import { Dashboard, type ScreenKey } from "./screens/Dashboard";
+import { Plantio } from "./screens/Plantio";
+import { Plantacao } from "./screens/Plantacao";
+import { Renda } from "./screens/Renda";
+import { Clima } from "./screens/Clima";
+import { Tarefas } from "./screens/Tarefas";
+import { Perfil } from "./screens/Perfil";
 
+type Route = "login" | "menu" | ScreenKey;
 
-import { NameScreen } from "./screens/identificationScreen";
-import { PinScreen } from "./screens/pinScreen";
-import { HomeScreen } from "./screens/homeScreen";
-import { AddPlantScreen } from "./screens/addPlant";
-import { PlantScreen } from "./screens/plant";
+const USER = "João";
 
-// Criamos esse componente interno para podermos usar o `useNavigate`
-function AppRoutes() {
-  const [userName, setUserName] = useState("");
-  const navigate = useNavigate();
-
-  return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <NameScreen
-            onNext={(name) => {
-              setUserName(name);
-              navigate("/pin"); // Vai para a tela de PIN
-            }}
-          />
-        }
-      />
-      
-      <Route
-        path="/pin"
-        element={
-          <PinScreen
-            userName={userName}
-            onBack={() => navigate(-1)} // Volta para a tela anterior
-            onComplete={() => navigate("/dashboard")} // Vai para a Home
-          />
-        }
-      />
-      
-      <Route
-        path="/dashboard"
-        element={<HomeScreen userName={userName} />}
-      />
-
-      <Route
-        path="/add-plant"
-        element={<AddPlantScreen />}
-      />
-      <Route
-        path="/plant"
-        element={<PlantScreen />}
-      />
-    </Routes>
-  );
+function speak(text: string) {
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "pt-BR";
+    u.rate = 0.95;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  }
 }
 
 export default function App() {
+  const [route, setRoute] = useState<Route>("login");
+  const back = () => setRoute("menu");
+
+  const screen = (() => {
+    switch (route) {
+      case "login":
+        return <Login onEnter={() => setRoute("menu")} />;
+      case "menu":
+        return (
+          <Dashboard
+            name={USER}
+            onOpen={(s) => setRoute(s)}
+            onSpeak={() => speak(`Bom dia ${USER}. Toque em qualquer botão para abrir.`)}
+          />
+        );
+      case "plantio":
+        return <Plantio onBack={back} onSpeak={speak} />;
+      case "plantacao":
+        return <Plantacao onBack={back} onSpeak={speak} />;
+      case "renda":
+        return <Renda onBack={back} onSpeak={speak} />;
+      case "clima":
+        return <Clima onBack={back} onSpeak={speak} />;
+      case "tarefas":
+        return <Tarefas onBack={back} onSpeak={speak} />;
+      case "perfil":
+        return <Perfil name={USER} onBack={back} onSpeak={speak} onLogout={() => setRoute("login")} />;
+    }
+  })();
+
   return (
-    // O seu fundo bonito que centraliza a tela do celular
-    <div 
-      className="min-h-screen flex items-center justify-center" 
-      style={{ background: "linear-gradient(to bottom, #d4deda, #e8efed)" }}
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#0D2B0D",
+        display: "flex",
+        justifyContent: "center",
+        fontFamily: "Nunito, 'Nunito Sans', system-ui, sans-serif",
+      }}
     >
-      {/* O seu contêiner que simula a tela do celular */}
-      <div className="w-full max-w-[430px] min-h-screen bg-white relative overflow-hidden shadow-2xl">
-        {/* O Router precisa ficar em volta de tudo que vai navegar */}
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 430,
+          minHeight: "100vh",
+          background: "#FAF8F3",
+          boxShadow: "0 0 40px rgba(0,0,0,0.25)",
+          overflow: "hidden",
+        }}
+      >
+        {screen}
       </div>
     </div>
   );
