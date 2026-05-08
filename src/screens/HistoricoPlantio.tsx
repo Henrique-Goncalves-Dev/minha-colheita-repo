@@ -86,9 +86,7 @@ export function HistoricoPlantio({
                         Colhido em {s.dataColheita}
                       </p>
                     </div>
-                    <Pill tone="gold" style={{ background: "#E8A020", color: "white", border: "none" }}>
-                      🏆
-                    </Pill>
+                    <Pill tone="goldSolid">🏆</Pill>
                     <ChevronRight size={20} color={colors.earthSoft} strokeWidth={2.4} />
                   </div>
                 </Card>

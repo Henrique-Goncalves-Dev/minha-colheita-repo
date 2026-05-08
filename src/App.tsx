@@ -187,7 +187,7 @@ export default function App() {
           minHeight: "100vh",
           background: "#FAF8F3",
           boxShadow: "0 0 40px rgba(0,0,0,0.25)",
-          overflow: "hidden",
+          overflowX: "hidden",
         }}
       >
         {screen}

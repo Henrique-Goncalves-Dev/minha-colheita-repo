@@ -47,14 +47,14 @@ export function DetalheSemente({
       >
         {/* Barra de Navegação Superior */}
         <div className="flex items-center justify-between mb-8 relative z-10">
-          <button
+          <button type="button"
             onClick={onBack}
             className="p-2 -ml-2 rounded-full flex items-center justify-center active:scale-95"
             style={{ background: "rgba(255,255,255,0.2)", color: "white", backdropFilter: "blur(4px)" }}
           >
             <ArrowLeft size={24} strokeWidth={2.5} />
           </button>
-          <button
+          <button type="button"
             onClick={explicarTela}
             className="p-2 -mr-2 bg-[#E8A020] rounded-full active:scale-95 shadow-md flex items-center justify-center animate-pulse"
             style={{ width: 44, height: 44, color: "white" }}
@@ -195,7 +195,7 @@ export function DetalheSemente({
 
         {/* BOTÃO DE COLHER */}
         {semente.ready && (
-          <button
+          <button type="button"
             onClick={() => onHarvest(semente)}
             className="w-full flex items-center justify-center gap-2 active:scale-[0.98] transition-transform mt-4"
             style={{

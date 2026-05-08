@@ -138,7 +138,7 @@ export function Renda({
   return (
     <div className="min-h-full flex flex-col" style={{ background: colors.cream }}>
       <div className="flex items-center justify-between p-4 bg-white" style={{ borderBottom: `1px solid ${colors.border}` }}>
-        <button onClick={onBack} style={{ color: colors.earth }} className="p-2 -ml-2 active:scale-95">
+        <button type="button" onClick={onBack} style={{ color: colors.earth }} className="p-2 -ml-2 active:scale-95">
           <ChevronLeft size={24} strokeWidth={2.5} />
         </button>
         <div className="text-center">
@@ -147,7 +147,7 @@ export function Renda({
           </h1>
           <p style={{ color: colors.earthSoft, fontSize: 12, fontWeight: 800 }}>Resumo financeiro</p>
         </div>
-        <button
+        <button type="button"
           onClick={explicarTela}
           className="p-2 -mr-2 bg-[#E8A020] rounded-full active:scale-95 shadow-md flex items-center justify-center animate-pulse"
           style={{ width: 44, height: 44, color: "white" }}
@@ -159,7 +159,7 @@ export function Renda({
       <div className="p-4 space-y-4 flex-1">
         {/* Seletor de Mês e Ano */}
         <div className="flex items-center justify-between bg-white rounded-2xl p-2 shadow-sm border border-[#EBEBEB]">
-          <button onClick={() => mudarMes(-1)} className="p-2 active:scale-90" style={{ color: colors.earth }}>
+          <button type="button" onClick={() => mudarMes(-1)} className="p-2 active:scale-90" style={{ color: colors.earth }}>
             <ChevronLeft size={24} strokeWidth={3} />
           </button>
           
@@ -173,14 +173,14 @@ export function Renda({
             </div>
           </div>
 
-          <button onClick={() => mudarMes(1)} className="p-2 active:scale-90" style={{ color: colors.earth }}>
+          <button type="button" onClick={() => mudarMes(1)} className="p-2 active:scale-90" style={{ color: colors.earth }}>
             <ChevronRight size={24} strokeWidth={3} />
           </button>
         </div>
 
         {/* Botão de atalho para voltar ao mês atual */}
         {estaNoMesDiferente && (
-          <button 
+          <button type="button" 
             onClick={irParaHoje}
             className="w-full flex items-center justify-center gap-2 p-2 rounded-xl active:scale-95 transition-all"
             style={{ background: "#E0F2D9", color: "#3D8B3D", fontWeight: 800, fontSize: 13 }}
