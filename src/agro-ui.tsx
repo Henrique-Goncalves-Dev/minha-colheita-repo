@@ -223,9 +223,11 @@ export function Card({
 export function Pill({
   children,
   tone = "gold",
+  style, // <-- 1. Adicionamos o style aqui
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
   tone?: "gold" | "green" | "red" | "neutral";
+  style?: React.CSSProperties; // <-- 2. Tipamos ele aqui
 }) {
   const tones = {
     gold: { bg: colors.goldLight, border: colors.gold, fg: colors.goldDeep },
@@ -233,6 +235,7 @@ export function Pill({
     red: { bg: "#FDECEC", border: colors.alert, fg: colors.alert },
     neutral: { bg: colors.cream, border: colors.border, fg: colors.earth },
   }[tone];
+  
   return (
     <span
       style={{
@@ -248,6 +251,7 @@ export function Pill({
         display: "inline-flex",
         alignItems: "center",
         gap: 4,
+        ...style, // <-- 3. E aplicamos ele aqui no final para sobrescrever o padrão!
       }}
     >
       {children}

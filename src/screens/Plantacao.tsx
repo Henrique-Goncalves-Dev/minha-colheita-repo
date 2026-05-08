@@ -1,17 +1,21 @@
 import { Plus, ChevronRight } from "lucide-react";
 import { Card, HeaderBar, Pill, SectionLabel, colors } from "../agro-ui";
 
-const SEEDS = [
-  { emoji: "🌽", name: "Milho", days: 28, ready: false, bg: "#FFF4D6", accent: "#E8A020", planted: "12 Mar" },
-  { emoji: "🫘", name: "Feijão", days: 45, ready: false, bg: "#F0E0CC", accent: "#7A5230", planted: "02 Abr" },
-  { emoji: "🍅", name: "Tomate", days: 0, ready: true, bg: "#FFE0DD", accent: "#D63C3C", planted: "10 Jan" },
-  { emoji: "🥬", name: "Alface", days: 12, ready: false, bg: "#E0F2D9", accent: "#52B152", planted: "18 Abr" },
-  { emoji: "🥕", name: "Cenoura", days: 60, ready: false, bg: "#FFE3CC", accent: "#E8A020", planted: "20 Mar" },
-];
-
-export function Plantacao({ onBack, onSpeak }: { onBack: () => void; onSpeak: (t: string) => void }) {
+export function Plantacao({ 
+  sementes, 
+  onBack, 
+  onSpeak, 
+  onAddNovo,
+  onOpenDetails
+}: { 
+  sementes: any[]; 
+  onBack: () => void; 
+  onSpeak: (t: string) => void;
+  onAddNovo: () => void;
+  onOpenDetails: (semente: any) => void;
+}) {
   const speakAll = () => {
-    const text = SEEDS.map((s) =>
+    const text = sementes.map((s) =>
       s.ready ? `${s.name} pronto para colher` : `${s.name}, colheita em ${s.days} dias`
     ).join(". ");
     onSpeak(text);
@@ -21,7 +25,7 @@ export function Plantacao({ onBack, onSpeak }: { onBack: () => void; onSpeak: (t
     <div className="min-h-full" style={{ background: colors.cream }}>
       <HeaderBar
         title="Plantação"
-        subtitle={`${SEEDS.length} sementes cadastradas`}
+        subtitle={`${sementes.length} sementes cadastradas`}
         onBack={onBack}
         onVoice={speakAll}
       />
@@ -50,73 +54,79 @@ export function Plantacao({ onBack, onSpeak }: { onBack: () => void; onSpeak: (t
               Alface · em 12 dias
             </p>
           </div>
-          <Pill tone="green">5 ativas</Pill>
+          <Pill tone="green">{sementes.filter(s => !s.ready).length} ativas</Pill>
         </Card>
 
         <SectionLabel>Sementes cadastradas</SectionLabel>
 
         <div className="space-y-3">
-          {SEEDS.map((s) => (
-            <Card key={s.name} style={{ padding: 12 }}>
-              <div className="flex items-center gap-3">
-                <div
-                  className="flex items-center justify-center"
-                  style={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 14,
-                    background: s.bg,
-                    fontSize: 32,
-                    boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.04)",
-                  }}
-                >
-                  {s.emoji}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p
+          {sementes.map((s) => (
+            <div 
+              key={s.name} 
+              onClick={() => onOpenDetails(s)} 
+              className="cursor-pointer active:scale-[0.98] transition-transform block"
+            >
+              <Card style={{ padding: 12 }}>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="flex items-center justify-center"
                     style={{
-                      fontFamily: "Nunito",
-                      fontWeight: 900,
-                      fontSize: 17,
-                      color: colors.ink,
-                      letterSpacing: -0.2,
+                      width: 60,
+                      height: 60,
+                      borderRadius: 14,
+                      background: s.bg,
+                      fontSize: 32,
+                      boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.04)",
                     }}
                   >
-                    {s.name}
-                  </p>
-                  <p style={{ color: colors.earthSoft, fontSize: 12, fontWeight: 800 }}>
-                    {s.ready ? "Pronto para colher" : `Plantado em ${s.planted} · ~${s.days} dias`}
-                  </p>
-                  {!s.ready && (
-                    <div
+                    {s.emoji}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p
                       style={{
-                        marginTop: 6,
-                        height: 5,
-                        background: colors.wash,
-                        borderRadius: 999,
-                        overflow: "hidden",
+                        fontFamily: "Nunito",
+                        fontWeight: 900,
+                        fontSize: 17,
+                        color: colors.ink,
+                        letterSpacing: -0.2,
                       }}
                     >
+                      {s.name}
+                    </p>
+                    <p style={{ color: colors.earthSoft, fontSize: 12, fontWeight: 800 }}>
+                      {s.ready ? "Pronto para colher" : `Plantado em ${s.planted} · ~${s.days} dias`}
+                    </p>
+                    {!s.ready && (
                       <div
                         style={{
-                          width: `${Math.max(15, 100 - s.days)}%`,
-                          height: "100%",
-                          background: s.accent,
+                          marginTop: 6,
+                          height: 5,
+                          background: colors.wash,
                           borderRadius: 999,
+                          overflow: "hidden",
                         }}
-                      />
-                    </div>
-                  )}
+                      >
+                        <div
+                          style={{
+                            width: `${Math.max(15, 100 - s.days)}%`,
+                            height: "100%",
+                            background: s.accent,
+                            borderRadius: 999,
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  {s.ready ? <Pill tone="gold">✅ Pronto</Pill> : <Pill tone="neutral">{s.days}d</Pill>}
+                  <ChevronRight size={20} color={colors.earthSoft} strokeWidth={2.4} />
                 </div>
-                {s.ready ? <Pill tone="gold">✅ Pronto</Pill> : <Pill tone="neutral">{s.days}d</Pill>}
-                <ChevronRight size={20} color={colors.earthSoft} strokeWidth={2.4} />
-              </div>
-            </Card>
+              </Card>
+            </div>
           ))}
         </div>
 
         <button
-          onClick={() => onSpeak("Adicionar semente")}
+          onClick={onAddNovo}
           className="w-full flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
           style={{
             marginTop: 4,

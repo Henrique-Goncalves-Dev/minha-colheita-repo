@@ -1,26 +1,25 @@
-import { useState } from "react";
 import { Plus, Check } from "lucide-react";
 import { Card, HeaderBar, PrimaryButton, Pill, SectionLabel, colors } from "../agro-ui";
 
-type Task = { id: number; emoji: string; title: string; when: string; done: boolean; tone: "today" | "soon" };
-
-const INITIAL: Task[] = [
-  { id: 1, emoji: "💧", title: "Regar o milho", when: "Hoje, manhã", done: false, tone: "today" },
-  { id: 2, emoji: "🌾", title: "Colher tomate", when: "Hoje, tarde", done: false, tone: "today" },
-  { id: 3, emoji: "🐔", title: "Alimentar galinhas", when: "Amanhã", done: true, tone: "soon" },
-  { id: 4, emoji: "🚜", title: "Arar terreno novo", when: "Sexta-feira", done: false, tone: "soon" },
-];
-
-export function Tarefas({ onBack, onSpeak }: { onBack: () => void; onSpeak: (t: string) => void }) {
-  const [tasks, setTasks] = useState(INITIAL);
-
-  const toggle = (id: number) => setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+export function Tarefas({ 
+  tarefas, 
+  onToggle, 
+  onAddNovo, 
+  onBack, 
+  onSpeak 
+}: { 
+  tarefas: any[]; 
+  onToggle: (id: number) => void;
+  onAddNovo: () => void;
+  onBack: () => void; 
+  onSpeak: (t: string) => void;
+}) {
   const speakAll = () =>
-    onSpeak(tasks.map((t) => `${t.title}, ${t.when}, ${t.done ? "feito" : "pendente"}`).join(". "));
+    onSpeak(tarefas.map((t) => `${t.title}, ${t.when}, ${t.done ? "feito" : "pendente"}`).join(". "));
 
-  const pending = tasks.filter((t) => !t.done).length;
-  const total = tasks.length;
-  const pct = Math.round(((total - pending) / total) * 100);
+  const pending = tarefas.filter((t) => !t.done).length;
+  const total = tarefas.length;
+  const pct = total === 0 ? 0 : Math.round(((total - pending) / total) * 100);
 
   return (
     <div className="min-h-full" style={{ background: colors.cream }}>
@@ -55,10 +54,10 @@ export function Tarefas({ onBack, onSpeak }: { onBack: () => void; onSpeak: (t: 
 
         <SectionLabel>Agenda do campo</SectionLabel>
 
-        {tasks.map((t) => (
+        {tarefas.map((t) => (
           <button
             key={t.id}
-            onClick={() => toggle(t.id)}
+            onClick={() => onToggle(t.id)}
             className="w-full flex items-center gap-3 active:scale-[0.99] transition-transform text-left"
             style={{
               background: colors.white,
@@ -124,7 +123,7 @@ export function Tarefas({ onBack, onSpeak }: { onBack: () => void; onSpeak: (t: 
 
         <div className="pt-1 pb-2">
           <PrimaryButton
-            onClick={() => onSpeak("Adicionar nova tarefa")}
+            onClick={onAddNovo}
             icon={<Plus size={18} strokeWidth={2.8} />}
           >
             Adicionar tarefa
