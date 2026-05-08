@@ -1,7 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Sprout, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Sprout, CheckCircle, Mic } from 'lucide-react';
 import { criarPlantio, type ApiError } from '../services/api';
+import { GuidedVoiceForm } from '../voice/GuidedVoiceForm';
+import { plantioFlow } from '../voice/voiceFlow';
+import { AudioButton } from '../components/AudioButton';
+import { isSTTAvailable } from '../voice/stt';
+
+const SUMMARY_LABELS: Record<string, string> = {
+  nomeSemente: 'semente',
+  quantidade: 'quantidade',
+  custo: 'custo em reais',
+};
 
 export function PlantioScreen() {
   const navigate = useNavigate();
@@ -13,6 +23,8 @@ export function PlantioScreen() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const sttSupported = isSTTAvailable();
 
   const valido =
     nomeSemente.trim().length > 0 &&
@@ -79,10 +91,24 @@ export function PlantioScreen() {
         </div>
       </div>
 
+      {sttSupported && (
+        <button
+          type="button"
+          onClick={() => setVoiceOpen(true)}
+          className="w-full max-w-sm mx-auto mb-5 bg-[#4A6F62] text-white rounded-2xl py-4 text-lg font-medium flex items-center justify-center gap-3 active:scale-95 transition-transform shadow-md"
+        >
+          <Mic size={24} />
+          Cadastrar por voz
+        </button>
+      )}
+
       <form className="w-full max-w-sm mx-auto flex flex-col gap-5" onSubmit={handleSubmit}>
 
         <div className="flex flex-col gap-2">
-          <label className="text-[#345348] font-medium">Nome da semente</label>
+          <div className="flex items-center justify-between">
+            <label className="text-[#345348] font-medium">Nome da semente</label>
+            <AudioButton variant="circle" speakText="Nome da semente" className="!w-10 !h-10" />
+          </div>
           <input
             type="text"
             placeholder="Ex: Milho, Soja..."
@@ -93,7 +119,10 @@ export function PlantioScreen() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-[#345348] font-medium">Data do plantio</label>
+          <div className="flex items-center justify-between">
+            <label className="text-[#345348] font-medium">Data do plantio</label>
+            <AudioButton variant="circle" speakText="Data do plantio" className="!w-10 !h-10" />
+          </div>
           <input
             type="date"
             value={dataPlantacao}
@@ -103,7 +132,10 @@ export function PlantioScreen() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-[#345348] font-medium">Quantidade de sementes</label>
+          <div className="flex items-center justify-between">
+            <label className="text-[#345348] font-medium">Quantidade de sementes</label>
+            <AudioButton variant="circle" speakText="Quantidade de sementes" className="!w-10 !h-10" />
+          </div>
           <input
             type="number"
             placeholder="Ex: 200"
@@ -115,7 +147,10 @@ export function PlantioScreen() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-[#345348] font-medium">Custo total (R$)</label>
+          <div className="flex items-center justify-between">
+            <label className="text-[#345348] font-medium">Custo total (R$)</label>
+            <AudioButton variant="circle" speakText="Custo total em reais" className="!w-10 !h-10" />
+          </div>
           <input
             type="number"
             placeholder="Ex: 150.00"
@@ -143,6 +178,21 @@ export function PlantioScreen() {
           )}
         </button>
       </form>
+
+      {voiceOpen && (
+        <GuidedVoiceForm
+          steps={plantioFlow}
+          title="Cadastro por voz"
+          summaryLabel={(field, value) => `${SUMMARY_LABELS[field] ?? field} ${value}`}
+          onComplete={(answers) => {
+            if (typeof answers.nomeSemente === 'string') setNomeSemente(answers.nomeSemente);
+            if (typeof answers.quantidade === 'number') setQuantidade(String(answers.quantidade));
+            if (typeof answers.custo === 'number') setCusto(String(answers.custo));
+            setVoiceOpen(false);
+          }}
+          onCancel={() => setVoiceOpen(false)}
+        />
+      )}
     </div>
   );
 }
