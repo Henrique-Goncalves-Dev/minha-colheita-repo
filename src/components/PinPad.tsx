@@ -12,7 +12,7 @@ export function PinPad({ onNumberPress, onDeletePress, onConfirmPress }: PinPadP
   return (
     <div className="grid grid-cols-3 gap-4 max-w-xs mx-auto">
       {numbers.map((num) => (
-        <button
+        <button type="button"
           key={num}
           onClick={() => onNumberPress(num)}
           className="bg-[#486b5f] text-white text-3xl font-medium h-20 rounded-xl active:bg-[#345348] transition-colors shadow-sm"
@@ -22,7 +22,7 @@ export function PinPad({ onNumberPress, onDeletePress, onConfirmPress }: PinPadP
       ))}
       
       {/* Botão Apagar */}
-      <button 
+      <button type="button" 
         onClick={onDeletePress}
         className="bg-[#F9313A] text-white flex justify-center items-center h-20 rounded-xl active:bg-red-700 transition-colors shadow-sm"
       >
@@ -30,7 +30,7 @@ export function PinPad({ onNumberPress, onDeletePress, onConfirmPress }: PinPadP
       </button>
 
       {/* Botão Zero */}
-      <button
+      <button type="button"
         onClick={() => onNumberPress(0)}
         className="bg-[#486b5f] text-white text-3xl font-medium h-20 rounded-xl active:bg-[#345348] transition-colors shadow-sm"
       >
@@ -38,7 +38,7 @@ export function PinPad({ onNumberPress, onDeletePress, onConfirmPress }: PinPadP
       </button>
 
       {/* Botão Confirmar */}
-      <button 
+      <button type="button" 
         onClick={onConfirmPress}
         className="bg-[#CFD1CF] text-gray-500 flex justify-center items-center h-20 rounded-xl active:bg-gray-400 transition-colors shadow-sm"
       >
