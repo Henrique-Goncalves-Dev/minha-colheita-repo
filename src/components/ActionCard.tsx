@@ -14,7 +14,7 @@ export function ActionCard({ title, icon, bgColor = 'bg-[#345348]' }: ActionCard
         <Volume2 size={16} />
         <span>{title}</span>
       </div>
-      <button className={`${bgColor} flex items-center justify-center rounded-3xl aspect-square shadow-sm active:scale-95 transition-transform text-white`}>
+      <button type="button" className={`${bgColor} flex items-center justify-center rounded-3xl aspect-square shadow-sm active:scale-95 transition-transform text-white`}>
         {icon}
       </button>
     </div>

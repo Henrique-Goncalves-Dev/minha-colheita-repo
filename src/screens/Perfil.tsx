@@ -87,7 +87,7 @@ export function Perfil({
         </div>
       </div>
 
-      <div className="p-4 space-y-4" style={{ marginTop: -44 }}>
+      <div className="p-4 space-y-4" style={{ marginTop: -44, position: "relative", zIndex: 1 }}>
         {/* Stats */}
         <div
           style={{
@@ -120,7 +120,7 @@ export function Perfil({
           }}
         >
           {ACTIONS.map((a, i) => (
-            <button
+            <button type="button"
               key={a.label}
               onClick={() => onSpeak(a.label)}
               className="w-full flex items-center gap-3"
@@ -159,7 +159,7 @@ export function Perfil({
           ))}
         </div>
 
-        <button
+        <button type="button"
           onClick={onLogout}
           className="w-full flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
           style={{

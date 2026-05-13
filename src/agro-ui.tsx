@@ -25,7 +25,7 @@ export const colors = {
 
 export function VoiceFab({ onClick, label = "Ouvir" }: { onClick?: () => void; label?: string }) {
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       aria-label={label}
       className="flex items-center justify-center active:scale-95 transition-transform"
@@ -69,7 +69,7 @@ export function HeaderBar({
       >
         <div className="flex items-center gap-3 min-w-0">
           {onBack && (
-            <button
+            <button type="button"
               onClick={onBack}
               aria-label="Voltar"
               className="flex items-center justify-center active:scale-95 transition-transform"
@@ -119,7 +119,7 @@ export function PrimaryButton({
   icon?: ReactNode;
 }) {
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className={`flex items-center justify-center gap-2 active:scale-[0.98] transition-transform ${fullWidth ? "w-full" : ""}`}
       style={{
@@ -143,7 +143,7 @@ export function PrimaryButton({
 
 export function VoiceButtonLarge({ children, onClick }: { children: ReactNode; onClick?: () => void }) {
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className="w-full flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
       style={{
@@ -166,7 +166,7 @@ export function VoiceButtonLarge({ children, onClick }: { children: ReactNode; o
 
 export function SecondaryButton({ children, onClick, icon }: { children: ReactNode; onClick?: () => void; icon?: ReactNode }) {
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className="flex items-center justify-center gap-2 w-full active:scale-[0.98] transition-transform"
       style={{
@@ -223,14 +223,15 @@ export function Card({
 export function Pill({
   children,
   tone = "gold",
-  style, // <-- 1. Adicionamos o style aqui
+  style,
 }: {
   children: React.ReactNode;
-  tone?: "gold" | "green" | "red" | "neutral";
-  style?: React.CSSProperties; // <-- 2. Tipamos ele aqui
+  tone?: "gold" | "goldSolid" | "green" | "red" | "neutral";
+  style?: React.CSSProperties;
 }) {
   const tones = {
     gold: { bg: colors.goldLight, border: colors.gold, fg: colors.goldDeep },
+    goldSolid: { bg: colors.gold, border: colors.gold, fg: colors.white },
     green: { bg: colors.wash, border: colors.light, fg: colors.field },
     red: { bg: "#FDECEC", border: colors.alert, fg: colors.alert },
     neutral: { bg: colors.cream, border: colors.border, fg: colors.earth },
@@ -261,7 +262,7 @@ export function Pill({
 
 export function VoiceBanner({ onClick }: { onClick?: () => void }) {
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className="w-full flex items-center justify-center gap-2 active:opacity-90"
       style={{

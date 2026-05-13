@@ -76,7 +76,7 @@ export function Dashboard({
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <button type="button"
               aria-label="Notificações"
               className="flex items-center justify-center relative"
               style={{
@@ -120,8 +120,8 @@ export function Dashboard({
       </div>
 
       {/* Voice CTA card overlapping */}
-      <div className="px-4" style={{ marginTop: -42 }}>
-        <button
+      <div className="px-4" style={{ marginTop: -42, position: "relative", zIndex: 1 }}>
+        <button type="button"
           onClick={onSpeak}
           className="w-full flex items-center gap-3 active:scale-[0.99] transition-transform"
           style={{
@@ -193,7 +193,7 @@ export function Dashboard({
 
         <div className="grid grid-cols-2 gap-3 pb-6">
           {TILES.map((t) => (
-            <button
+            <button type="button"
               key={t.key}
               onClick={() => onOpen(t.key)}
               className="relative flex flex-col items-start active:scale-[0.97] transition-transform overflow-hidden"

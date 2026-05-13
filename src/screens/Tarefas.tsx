@@ -55,7 +55,7 @@ export function Tarefas({
         <SectionLabel>Agenda do campo</SectionLabel>
 
         {tarefas.map((t) => (
-          <button
+          <button type="button"
             key={t.id}
             onClick={() => onToggle(t.id)}
             className="w-full flex items-center gap-3 active:scale-[0.99] transition-transform text-left"

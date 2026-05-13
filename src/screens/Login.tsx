@@ -182,10 +182,10 @@ function LoginForm({
       </div>
       <VoiceButtonLarge onClick={onSpeak}>ENTRAR POR VOZ</VoiceButtonLarge>
       <div className="flex justify-between mt-5">
-        <button onClick={onSignup} style={{ color: colors.field, fontWeight: 900, fontSize: 13 }}>
+        <button type="button" onClick={onSignup} style={{ color: colors.field, fontWeight: 900, fontSize: 13 }}>
           Criar conta
         </button>
-        <button onClick={onForgot} style={{ color: colors.earth, fontWeight: 900, fontSize: 13 }}>
+        <button type="button" onClick={onForgot} style={{ color: colors.earth, fontWeight: 900, fontSize: 13 }}>
           Esqueci a senha
         </button>
       </div>
@@ -204,7 +204,7 @@ function SignupForm({
 }) {
   return (
     <>
-      <button
+      <button type="button"
         onClick={onBack}
         className="flex items-center gap-1 mb-2"
         style={{ color: colors.field, fontWeight: 900, fontSize: 13 }}
@@ -235,7 +235,7 @@ function SignupForm({
 function ForgotForm({ onBack, onSpeak }: { onBack: () => void; onSpeak: (t: string) => void }) {
   return (
     <>
-      <button
+      <button type="button"
         onClick={onBack}
         className="flex items-center gap-1 mb-2"
         style={{ color: colors.field, fontWeight: 900, fontSize: 13 }}

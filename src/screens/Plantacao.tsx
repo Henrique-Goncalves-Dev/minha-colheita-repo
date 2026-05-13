@@ -125,7 +125,7 @@ export function Plantacao({
           ))}
         </div>
 
-        <button
+        <button type="button"
           onClick={onAddNovo}
           className="w-full flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
           style={{

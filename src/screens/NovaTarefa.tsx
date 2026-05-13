@@ -97,7 +97,7 @@ export function NovaTarefa({
         />
       </div>
 
-      <button
+      <button type="button"
         onClick={() => iniciarGravacao(id, label)}
         className={`flex items-center justify-center transition-all ${gravando === id ? 'scale-110' : ''}`}
         style={{
@@ -117,13 +117,13 @@ export function NovaTarefa({
   return (
     <div className="min-h-full flex flex-col" style={{ background: colors.cream }}>
       <div className="flex items-center justify-between p-4 bg-white" style={{ borderBottom: `1px solid ${colors.border}` }}>
-        <button onClick={onBack} style={{ color: colors.earth }} className="p-2 -ml-2 active:scale-95">
+        <button type="button" onClick={onBack} style={{ color: colors.earth }} className="p-2 -ml-2 active:scale-95">
           <ArrowLeft size={24} strokeWidth={2.5} />
         </button>
         <h1 style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 18, color: colors.ink }}>
           Nova Tarefa
         </h1>
-        <button 
+        <button type="button" 
           onClick={explicarFormulario} 
           className="p-2 -mr-2 bg-[#E8A020] rounded-full active:scale-95 shadow-md flex items-center justify-center animate-pulse"
           style={{ width: 44, height: 44, color: "white" }}
@@ -141,7 +141,7 @@ export function NovaTarefa({
           </label>
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
             {EMOJIS.map((emoji) => (
-              <button
+              <button type="button"
                 key={emoji}
                 onClick={() => setFormData({ ...formData, emoji })}
                 style={{
@@ -167,7 +167,7 @@ export function NovaTarefa({
       </div>
 
       <div className="p-4 bg-white" style={{ borderTop: `1px solid ${colors.border}` }}>
-        <button
+        <button type="button"
           onClick={handleSave}
           className="w-full flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
           style={{
