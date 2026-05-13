@@ -26,6 +26,8 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+// ─── Auth ────────────────────────────────────────────────
+
 export async function registrar(nome: string, telefone: string, pin: string): Promise<void> {
   const res = await fetch(`${BASE_URL}/auth/registro`, {
     method: 'POST',
@@ -44,6 +46,29 @@ export async function entrar(telefone: string, pin: string): Promise<void> {
   const data = await handleResponse<{ access_token: string }>(res);
   saveToken(data.access_token);
 }
+
+export interface PerfilResponse {
+  id: number;
+  nome: string;
+  telefone: string;
+  total_plantios: number;
+  total_sementes_plantadas: number;
+  total_vendas: number;
+  total_arrecadado: number;
+}
+
+export async function getPerfil(): Promise<PerfilResponse> {
+  const res = await fetch(`${BASE_URL}/auth/me`, {
+    headers: { ...authHeaders() },
+  });
+  return handleResponse<PerfilResponse>(res);
+}
+
+export function logout(): void {
+  localStorage.removeItem('mc_token');
+}
+
+// ─── Plantio ─────────────────────────────────────────────
 
 export interface PlantioPayload {
   nome_semente: string;
@@ -115,6 +140,8 @@ export async function listarEstoque(): Promise<EstoqueItem[]> {
   });
   return handleResponse<EstoqueItem[]>(res);
 }
+
+// ─── Venda ───────────────────────────────────────────────
 
 export interface VendaPayload {
   nome_semente: string;
@@ -210,23 +237,99 @@ export async function excluirVenda(id: number): Promise<void> {
   }
 }
 
-export interface PerfilResponse {
-  id: number;
-  nome: string;
-  telefone: string;
-  total_plantios: number;
-  total_sementes_plantadas: number;
-  total_vendas: number;
-  total_arrecadado: number;
+// ─── Tarefas ─────────────────────────────────────────────
+
+export interface TarefaPayload {
+  emoji?: string;
+  titulo: string;
+  quando?: string | null;
 }
 
-export async function getPerfil(): Promise<PerfilResponse> {
-  const res = await fetch(`${BASE_URL}/auth/me`, {
+export interface TarefaResponse {
+  id: number;
+  emoji: string;
+  titulo: string;
+  quando: string | null;
+  concluida: boolean;
+  criado_em: string;
+}
+
+export interface TarefaUpdatePayload {
+  emoji?: string;
+  titulo?: string;
+  quando?: string | null;
+  concluida?: boolean;
+}
+
+export async function criarTarefa(dados: TarefaPayload): Promise<TarefaResponse> {
+  const res = await fetch(`${BASE_URL}/tarefas`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(dados),
+  });
+  return handleResponse<TarefaResponse>(res);
+}
+
+export async function listarTarefas(): Promise<TarefaResponse[]> {
+  const res = await fetch(`${BASE_URL}/tarefas`, {
     headers: { ...authHeaders() },
   });
-  return handleResponse<PerfilResponse>(res);
+  return handleResponse<TarefaResponse[]>(res);
 }
 
-export function logout(): void {
-  localStorage.removeItem('mc_token');
+export async function atualizarTarefa(id: number, dados: TarefaUpdatePayload): Promise<TarefaResponse> {
+  const res = await fetch(`${BASE_URL}/tarefas/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(dados),
+  });
+  return handleResponse<TarefaResponse>(res);
+}
+
+export async function toggleTarefa(id: number): Promise<TarefaResponse> {
+  const res = await fetch(`${BASE_URL}/tarefas/${id}/toggle`, {
+    method: 'PATCH',
+    headers: { ...authHeaders() },
+  });
+  return handleResponse<TarefaResponse>(res);
+}
+
+export async function excluirTarefa(id: number): Promise<void> {
+  const res = await fetch(`${BASE_URL}/tarefas/${id}`, {
+    method: 'DELETE',
+    headers: { ...authHeaders() },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: 'Erro desconhecido' }));
+    throw { status: res.status, detail: body.detail } as ApiError;
+  }
+}
+
+// ─── Clima ───────────────────────────────────────────────
+
+export interface PrevisaoDia {
+  dia: string;
+  emoji: string;
+  temp_max: string;
+  temp_min: string;
+}
+
+export interface ClimaResponse {
+  cidade: string;
+  temperatura: string;
+  descricao: string;
+  temp_max: string;
+  temp_min: string;
+  emoji: string;
+  umidade_solo: number;
+  umidade_solo_status: string;
+  alerta: string | null;
+  previsao: PrevisaoDia[];
+}
+
+export async function getClima(): Promise<ClimaResponse> {
+  const res = await fetch(`${BASE_URL}/clima`, {
+    headers: { ...authHeaders() },
+  });
+  return handleResponse<ClimaResponse>(res);
 }

@@ -1,11 +1,6 @@
 import { Mic, Bell, Settings, LogOut, ChevronRight, MapPin, BadgeCheck } from "lucide-react";
 import { HeaderBar, colors } from "../agro-ui";
-
-const STATS = [
-  { v: "3", label: "Plantios ativos" },
-  { v: "12", label: "Colheitas feitas" },
-  { v: "R$ 18k", label: "Renda no ano" },
-];
+import type { PerfilResponse } from "../services/api";
 
 const ACTIONS: { Icon: any; label: string }[] = [
   { Icon: Mic, label: "Configurar voz" },
@@ -14,17 +9,33 @@ const ACTIONS: { Icon: any; label: string }[] = [
 ];
 
 export function Perfil({
-  name,
+  perfil,
   onBack,
   onSpeak,
   onLogout,
 }: {
-  name: string;
+  perfil: PerfilResponse | null;
   onBack: () => void;
   onSpeak: (t: string) => void;
   onLogout: () => void;
 }) {
-  const place = "Goiânia, GO";
+  const nome = perfil?.nome || "Agricultor";
+  const telefone = perfil?.telefone || "";
+  const totalPlantios = perfil?.total_plantios ?? 0;
+  const totalVendas = perfil?.total_vendas ?? 0;
+  const totalArrecadado = perfil?.total_arrecadado ?? 0;
+
+  const formatCurrency = (v: number) => {
+    if (v >= 1000) return `R$ ${(v / 1000).toFixed(1)}k`;
+    return `R$ ${v.toLocaleString("pt-BR")}`;
+  };
+
+  const STATS = [
+    { v: String(totalPlantios), label: "Plantios ativos" },
+    { v: String(totalVendas), label: "Vendas feitas" },
+    { v: formatCurrency(totalArrecadado), label: "Renda total" },
+  ];
+
   return (
     <div className="min-h-full" style={{ background: colors.cream }}>
       <HeaderBar
@@ -33,7 +44,7 @@ export function Perfil({
         onBack={onBack}
         onVoice={() =>
           onSpeak(
-            `${name}, de ${place}. Você tem 3 plantios ativos, 12 colheitas feitas e renda no ano de 18 mil reais.`
+            `${nome}. Você tem ${totalPlantios} plantios ativos, ${totalVendas} vendas feitas e renda total de ${formatCurrency(totalArrecadado)}.`
           )
         }
       />
@@ -78,13 +89,17 @@ export function Perfil({
           👨‍🌾
         </div>
         <div className="flex items-center gap-1.5 mt-3 relative">
-          <p style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 22, letterSpacing: -0.3 }}>{name}</p>
+          <p style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 22, letterSpacing: -0.3 }}>{nome}</p>
           <BadgeCheck size={20} color={colors.gold} fill={colors.goldLight} />
         </div>
-        <div className="flex items-center gap-1 relative">
-          <MapPin size={14} strokeWidth={2.5} />
-          <p style={{ fontWeight: 800, fontSize: 13, opacity: 0.9 }}>{place}</p>
-        </div>
+        {telefone && (
+          <div className="flex items-center gap-1 relative">
+            <MapPin size={14} strokeWidth={2.5} />
+            <p style={{ fontWeight: 800, fontSize: 13, opacity: 0.9 }}>
+              Tel: {telefone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="p-4 space-y-4" style={{ marginTop: -44, position: "relative", zIndex: 1 }}>

@@ -1,82 +1,69 @@
-import React, { useState, useMemo } from "react";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Star, 
-  Volume2, 
-  ChevronLeft, 
-  ChevronRight, 
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  TrendingUp,
+  TrendingDown,
+  Star,
+  Volume2,
+  ChevronLeft,
+  ChevronRight,
   CalendarDays,
-  Target
+  Target,
+  Plus,
+  Loader2,
 } from "lucide-react";
 import { Card, HeaderBar, SectionLabel, colors } from "../agro-ui";
+import { getResumoFinanceiro, type ResumoFinanceiro } from "../services/api";
 
 const MESES_NOME = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
-// Função para extrair apenas números de um texto (Ex: "50 reais" -> 50)
-function extrairValor(texto: string | undefined): number {
-  if (!texto) return 0;
-  const apenasNumeros = texto.toString().replace(/[^\d,.-]/g, "").replace(",", ".");
-  return parseFloat(apenasNumeros) || 0;
-}
-
-// Formatar para moeda (Ex: 2500 -> R$ 2.500)
 function formatarMoeda(valor: number): string {
-  return `R$ ${valor.toLocaleString("pt-BR")}`;
+  return `R$ ${valor.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
 export function Renda({
-  sementes,
   onBack,
   onSpeak,
+  onRegistrarVenda,
 }: {
-  sementes: any[];
   onBack: () => void;
   onSpeak: (t: string) => void;
+  onRegistrarVenda: () => void;
 }) {
   const hoje = new Date();
-  
-  // Estados para controlar o mês e o ano que estamos visualizando
   const [mesAtualIndex, setMesAtualIndex] = useState(hoje.getMonth());
   const [anoAtual, setAnoAtual] = useState(hoje.getFullYear());
+  const [resumo, setResumo] = useState<ResumoFinanceiro | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Função para buscar os gastos de um mês e ano específicos
-  const getGasto = (mes: number, ano: number) => {
-    let total = 0;
-    sementes.forEach((s) => {
-      if (s.planted) {
-        const partes = s.planted.split(" ");
-        if (partes.length >= 2) {
-          const nomeMes = partes[1].substring(0, 3).toLowerCase();
-          const indexMes = MESES_NOME.findIndex((m) => m.toLowerCase() === nomeMes);
-          
-          // Se a data não tiver ano (Ex: "12 Mar"), assume que é o ano atual real. 
-          // Se tiver (Ex: "12 Mar 2026"), ele pega o ano correto.
-          let anoSemente = hoje.getFullYear();
-          if (partes.length >= 3 && !isNaN(parseInt(partes[2]))) {
-            anoSemente = parseInt(partes[2]);
-          }
+  useEffect(() => {
+    getResumoFinanceiro()
+      .then(setResumo)
+      .catch(() => onSpeak("Erro ao carregar dados financeiros"))
+      .finally(() => setLoading(false));
+  }, []);
 
-          if (indexMes === mes && anoSemente === ano) {
-            total += extrairValor(s.custoReal);
-          }
-        }
+  // Aggregate expenses by month from gastos_por_semente (plantios)
+  const gastoTotal = resumo?.gastos_por_semente.reduce((acc, g) => acc + g.custo_total, 0) ?? 0;
+
+  // Aggregate vendas by month
+  const vendasPorMes = useMemo(() => {
+    if (!resumo) return {};
+    const map: Record<string, number> = {};
+    resumo.vendas.forEach((v) => {
+      if (v.data_da_compra) {
+        const d = new Date(v.data_da_compra);
+        const key = `${d.getFullYear()}-${d.getMonth()}`;
+        map[key] = (map[key] || 0) + v.valor_recebido;
       }
     });
-    return total;
-  };
+    return map;
+  }, [resumo]);
 
-  // 1. Pegar os dados do mês e ano selecionados
-  const gastoNumero = getGasto(mesAtualIndex, anoAtual);
-  // Simulando a venda como o dobro do gasto + 20%
-  const vendaNumero = gastoNumero > 0 ? gastoNumero * 2.2 : 0;
-  const lucroNumero = vendaNumero - gastoNumero;
 
-  const gasto = formatarMoeda(gastoNumero);
-  const venda = formatarMoeda(vendaNumero);
-  const lucro = formatarMoeda(lucroNumero);
+  const totalVendas = resumo?.vendas.reduce((acc, v) => acc + v.valor_recebido, 0) ?? 0;
+  const lucroEstimado = totalVendas - gastoTotal;
 
-  // 2. Montar os dados do gráfico (Mês atual e os 4 anteriores, respeitando virada de ano)
+  // Chart data - last 5 months
   const chartData = useMemo(() => {
     const ultimos5 = [];
     for (let i = 4; i >= 0; i--) {
@@ -84,56 +71,57 @@ export function Renda({
       let a = anoAtual;
       if (m < 0) {
         m += 12;
-        a -= 1; // Volta um ano se o mês for menor que Janeiro
+        a -= 1;
       }
       ultimos5.push({
         m: MESES_NOME[m],
-        v: getGasto(m, a),
-        current: i === 0, // O último item é o mês selecionado
+        v: vendasPorMes[`${a}-${m}`] || 0,
+        current: i === 0,
       });
     }
     return ultimos5;
-  }, [mesAtualIndex, anoAtual, sementes]);
+  }, [mesAtualIndex, anoAtual, vendasPorMes]);
 
   const maxChartValue = Math.max(...chartData.map((x) => x.v), 100);
 
-  // Navegação entre os meses
   const mudarMes = (direcao: number) => {
     let novoMes = mesAtualIndex + direcao;
     let novoAno = anoAtual;
-
-    if (novoMes > 11) {
-      novoMes = 0;
-      novoAno += 1; // Virou o ano para frente
-    } else if (novoMes < 0) {
-      novoMes = 11;
-      novoAno -= 1; // Virou o ano para trás
-    }
-    
+    if (novoMes > 11) { novoMes = 0; novoAno += 1; }
+    else if (novoMes < 0) { novoMes = 11; novoAno -= 1; }
     setMesAtualIndex(novoMes);
     setAnoAtual(novoAno);
   };
 
-  // Voltar rapidamente para a data de hoje
   const irParaHoje = () => {
     setMesAtualIndex(hoje.getMonth());
     setAnoAtual(hoje.getFullYear());
     onSpeak("Voltando para o mês atual.");
   };
 
-  // Verifica se o usuário não está no mês atual para mostrar o botão de voltar
   const estaNoMesDiferente = mesAtualIndex !== hoje.getMonth() || anoAtual !== hoje.getFullYear();
 
   const explicarTela = () => {
-    const nomeMes = MESES_NOME[mesAtualIndex];
-    if (gastoNumero === 0) {
-      onSpeak(`No mês de ${nomeMes} de ${anoAtual}, você ainda não registrou nenhum gasto com plantação.`);
+    if (loading) { onSpeak("Carregando dados..."); return; }
+    if (totalVendas === 0 && gastoTotal === 0) {
+      onSpeak(`Nenhuma movimentação registrada ainda.`);
     } else {
       onSpeak(
-        `Resumo de ${nomeMes} de ${anoAtual}. Você gastou ${gasto}. A estimativa de venda é de ${venda}, gerando um lucro estimado de ${lucro}.`
+        `Resumo financeiro. Você gastou ${formatarMoeda(gastoTotal)} em plantações. Total de vendas: ${formatarMoeda(totalVendas)}. Lucro estimado: ${formatarMoeda(lucroEstimado)}.`
       );
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-full flex flex-col" style={{ background: colors.cream }}>
+        <HeaderBar title="Renda" subtitle="Resumo financeiro" onBack={onBack} />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 size={32} color={colors.field} className="animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-full flex flex-col" style={{ background: colors.cream }}>
@@ -142,9 +130,7 @@ export function Renda({
           <ChevronLeft size={24} strokeWidth={2.5} />
         </button>
         <div className="text-center">
-          <h1 style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 18, color: colors.ink }}>
-            Renda
-          </h1>
+          <h1 style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 18, color: colors.ink }}>Renda</h1>
           <p style={{ color: colors.earthSoft, fontSize: 12, fontWeight: 800 }}>Resumo financeiro</p>
         </div>
         <button type="button"
@@ -157,12 +143,11 @@ export function Renda({
       </div>
 
       <div className="p-4 space-y-4 flex-1">
-        {/* Seletor de Mês e Ano */}
+        {/* Month selector */}
         <div className="flex items-center justify-between bg-white rounded-2xl p-2 shadow-sm border border-[#EBEBEB]">
           <button type="button" onClick={() => mudarMes(-1)} className="p-2 active:scale-90" style={{ color: colors.earth }}>
             <ChevronLeft size={24} strokeWidth={3} />
           </button>
-          
           <div className="flex flex-col items-center">
             <p style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 18, color: colors.ink }}>
               {MESES_NOME[mesAtualIndex]}
@@ -172,15 +157,13 @@ export function Renda({
               <span>{anoAtual}</span>
             </div>
           </div>
-
           <button type="button" onClick={() => mudarMes(1)} className="p-2 active:scale-90" style={{ color: colors.earth }}>
             <ChevronRight size={24} strokeWidth={3} />
           </button>
         </div>
 
-        {/* Botão de atalho para voltar ao mês atual */}
         {estaNoMesDiferente && (
-          <button type="button" 
+          <button type="button"
             onClick={irParaHoje}
             className="w-full flex items-center justify-center gap-2 p-2 rounded-xl active:scale-95 transition-all"
             style={{ background: "#E0F2D9", color: "#3D8B3D", fontWeight: 800, fontSize: 13 }}
@@ -190,7 +173,7 @@ export function Renda({
           </button>
         )}
 
-        {/* Big lucro card */}
+        {/* Big profit card */}
         <div
           style={{
             background: `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldDeep} 100%)`,
@@ -202,54 +185,34 @@ export function Renda({
             boxShadow: "0 14px 30px rgba(232,160,32,0.35)",
           }}
         >
-          <div
-            style={{
-              position: "absolute",
-              top: -30,
-              right: -20,
-              width: 140,
-              height: 140,
-              borderRadius: 999,
-              background: "rgba(255,255,255,0.18)",
-              filter: "blur(20px)",
-            }}
-          />
+          <div style={{ position: "absolute", top: -30, right: -20, width: 140, height: 140, borderRadius: 999, background: "rgba(255,255,255,0.18)", filter: "blur(20px)" }} />
           <div className="flex items-center gap-2 mb-2 relative">
             <Star size={18} strokeWidth={2.8} fill="white" />
             <p style={{ fontWeight: 900, fontSize: 13, letterSpacing: 0.4, textTransform: "uppercase" }}>
               Lucro estimado
             </p>
           </div>
-          <p
-            style={{
-              fontFamily: "Nunito",
-              fontWeight: 900,
-              fontSize: 36,
-              letterSpacing: -1,
-              lineHeight: 1,
-              position: "relative",
-            }}
-          >
-            {lucro}
+          <p style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 36, letterSpacing: -1, lineHeight: 1, position: "relative" }}>
+            {formatarMoeda(lucroEstimado)}
           </p>
           <div className="flex items-center gap-1 mt-2 relative">
             <TrendingUp size={16} strokeWidth={2.8} />
-            <p style={{ fontWeight: 800, fontSize: 12 }}>Visualizando: {MESES_NOME[mesAtualIndex]} {anoAtual}</p>
+            <p style={{ fontWeight: 800, fontSize: 12 }}>Total acumulado</p>
           </div>
         </div>
 
-        {/* Gasto / venda */}
+        {/* Expense / Revenue */}
         <div className="grid grid-cols-2 gap-3">
           <SummaryTile
             icon={<TrendingDown size={20} color={colors.alert} strokeWidth={2.5} />}
             label="Total gasto"
-            value={gasto}
+            value={formatarMoeda(gastoTotal)}
             tone="red"
           />
           <SummaryTile
             icon={<TrendingUp size={20} color={colors.field} strokeWidth={2.5} />}
-            label="Estimativa venda"
-            value={venda}
+            label="Total vendas"
+            value={formatarMoeda(totalVendas)}
             tone="green"
           />
         </div>
@@ -257,7 +220,7 @@ export function Renda({
         {/* Chart */}
         <Card style={{ padding: 18 }} elevated>
           <div className="flex items-center justify-between mb-3">
-            <SectionLabel>Gastos recentes</SectionLabel>
+            <SectionLabel>Vendas por mês</SectionLabel>
             <p style={{ color: colors.earthSoft, fontSize: 11, fontWeight: 800 }}>Histórico</p>
           </div>
           <div className="flex items-end justify-between gap-2" style={{ height: 150 }}>
@@ -265,21 +228,14 @@ export function Renda({
               const h = (mo.v / maxChartValue) * 120;
               return (
                 <div key={`${mo.m}-${index}`} className="flex flex-col items-center flex-1">
-                  <p
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 900,
-                      color: mo.current ? colors.goldDeep : colors.earthSoft,
-                      marginBottom: 4,
-                    }}
-                  >
-                    R${mo.v}
+                  <p style={{ fontSize: 10, fontWeight: 900, color: mo.current ? colors.goldDeep : colors.earthSoft, marginBottom: 4 }}>
+                    {mo.v > 0 ? `R$${mo.v.toFixed(0)}` : "-"}
                   </p>
                   <div
                     style={{
                       width: "100%",
                       maxWidth: 32,
-                      height: Math.max(h, 4), // Mínimo de 4px para sempre aparecer a barrinha
+                      height: Math.max(h, 4),
                       background: mo.current
                         ? `linear-gradient(180deg, ${colors.gold} 0%, ${colors.goldDeep} 100%)`
                         : `linear-gradient(180deg, ${colors.light} 0%, ${colors.field} 100%)`,
@@ -288,14 +244,7 @@ export function Renda({
                       transition: "height 0.3s ease",
                     }}
                   />
-                  <p
-                    style={{
-                      marginTop: 8,
-                      fontSize: 11,
-                      fontWeight: 900,
-                      color: mo.current ? colors.goldDeep : colors.earthSoft,
-                    }}
-                  >
+                  <p style={{ marginTop: 8, fontSize: 11, fontWeight: 900, color: mo.current ? colors.goldDeep : colors.earthSoft }}>
                     {mo.m}
                   </p>
                 </div>
@@ -303,6 +252,46 @@ export function Renda({
             })}
           </div>
         </Card>
+
+        {/* Last sale */}
+        {resumo?.ultima_venda && (
+          <Card style={{ padding: 14 }} elevated>
+            <SectionLabel>Última venda</SectionLabel>
+            <div className="flex items-center gap-3 mt-3">
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: colors.wash, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>
+                🌾
+              </div>
+              <div className="flex-1">
+                <p style={{ fontFamily: "Nunito", fontWeight: 900, color: colors.ink, fontSize: 16 }}>
+                  {resumo.ultima_venda.nome_semente}
+                </p>
+                <p style={{ color: colors.earthSoft, fontSize: 12, fontWeight: 800 }}>
+                  {resumo.ultima_venda.quantidade} un · R$ {resumo.ultima_venda.valor_recebido.toFixed(0)}
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Register sale button */}
+        <button type="button"
+          onClick={onRegistrarVenda}
+          className="w-full flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+          style={{
+            background: `linear-gradient(180deg, ${colors.gold} 0%, ${colors.goldDeep} 100%)`,
+            color: colors.white,
+            height: 52,
+            borderRadius: 12,
+            fontFamily: "Nunito",
+            fontWeight: 900,
+            fontSize: 14,
+            letterSpacing: 0.3,
+            boxShadow: "0 6px 14px rgba(232,160,32,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
+          }}
+        >
+          <Plus size={18} strokeWidth={2.8} />
+          REGISTRAR VENDA
+        </button>
       </div>
     </div>
   );

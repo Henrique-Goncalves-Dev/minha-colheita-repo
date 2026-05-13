@@ -25,7 +25,7 @@ export function AudioButton({ variant = 'circle', text, onClick, className = '',
 
   return (
     <button type="button"
-      onClick={onClick}
+      onClick={handleClick}
       className={`flex items-center justify-center bg-[#345348] text-white transition-transform active:scale-95 shadow-md ${
         isPill ? 'rounded-full px-6 py-3 gap-3' : 'rounded-full w-14 h-14'
       } ${className}`}

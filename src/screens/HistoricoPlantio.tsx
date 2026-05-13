@@ -1,58 +1,63 @@
-import React from "react";
 import { ChevronRight, Leaf } from "lucide-react";
 import { Card, HeaderBar, Pill, colors } from "../agro-ui";
+import type { VendaResponse } from "../services/api";
 
-export function HistoricoPlantio({ 
-  historico, 
-  onBack, 
+export function HistoricoPlantio({
+  vendas,
+  onBack,
   onSpeak,
-  onOpenDetails
-}: { 
-  historico: any[]; 
-  onBack: () => void; 
+  onOpenDetails,
+}: {
+  vendas: VendaResponse[];
+  onBack: () => void;
   onSpeak: (t: string) => void;
-  onOpenDetails: (semente: any) => void;
+  onOpenDetails: (venda: VendaResponse) => void;
 }) {
   const speakAll = () => {
-    if (historico.length === 0) {
-      onSpeak("Seu histórico está vazio. Nenhuma colheita foi feita ainda.");
+    if (vendas.length === 0) {
+      onSpeak("Seu histórico está vazio. Nenhuma venda foi feita ainda.");
       return;
     }
-    const text = historico.map((s) => `${s.name} colhido em ${s.dataColheita}`).join(". ");
-    onSpeak(`Você tem ${historico.length} colheitas registradas. ` + text);
+    const text = vendas.map((v) => `${v.nome_semente}, ${v.quantidade} unidades por R$ ${v.valor_recebido.toFixed(0)}`).join(". ");
+    onSpeak(`Você tem ${vendas.length} vendas registradas. ${text}`);
+  };
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "Sem data";
+    return new Date(dateStr).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).replace(".", "");
   };
 
   return (
     <div className="min-h-full" style={{ background: colors.cream }}>
       <HeaderBar
-        title="Histórico"
-        subtitle={`${historico.length} colheitas`}
+        title="Vendas"
+        subtitle={`${vendas.length} registros`}
         onBack={onBack}
         onVoice={speakAll}
       />
 
       <div className="p-4 space-y-4">
-        {historico.length === 0 ? (
+        {vendas.length === 0 ? (
           <div className="text-center py-12 px-4">
-            <div 
+            <div
               className="mx-auto flex items-center justify-center mb-4"
               style={{ width: 80, height: 80, borderRadius: 999, background: colors.wash, color: colors.field }}
             >
               <Leaf size={40} strokeWidth={2} />
             </div>
             <p style={{ fontFamily: "Nunito", fontWeight: 900, color: colors.ink, fontSize: 20 }}>
-              Nenhuma colheita ainda
+              Nenhuma venda ainda
             </p>
             <p style={{ color: colors.earthSoft, fontSize: 14, fontWeight: 800, marginTop: 8 }}>
-              Quando você confirmar a colheita de uma plantação, ela aparecerá aqui no seu histórico.
+              Quando você registrar vendas, elas aparecerão aqui no seu histórico.
             </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {historico.map((s, index) => (
-              <div 
-                key={`${s.name}-${index}`} 
-                onClick={() => onOpenDetails(s)} 
+            {vendas.map((v) => (
+              <div
+                key={v.id}
+                onClick={() => onOpenDetails(v)}
                 className="cursor-pointer active:scale-[0.98] transition-transform block"
               >
                 <Card style={{ padding: 12 }}>
@@ -63,12 +68,12 @@ export function HistoricoPlantio({
                         width: 60,
                         height: 60,
                         borderRadius: 14,
-                        background: s.bg || "#E0F2D9",
+                        background: "#E0F2D9",
                         fontSize: 32,
                         boxShadow: "inset 0 -2px 0 rgba(0,0,0,0.04)",
                       }}
                     >
-                      {s.emoji}
+                      🌾
                     </div>
                     <div className="flex-1 min-w-0">
                       <p
@@ -80,13 +85,13 @@ export function HistoricoPlantio({
                           letterSpacing: -0.2,
                         }}
                       >
-                        {s.name}
+                        {v.nome_semente}
                       </p>
                       <p style={{ color: colors.earthSoft, fontSize: 12, fontWeight: 800 }}>
-                        Colhido em {s.dataColheita}
+                        {formatDate(v.data_da_compra)} · {v.quantidade} un · R$ {v.valor_recebido.toFixed(0)}
                       </p>
                     </div>
-                    <Pill tone="goldSolid">🏆</Pill>
+                    <Pill tone="gold">💰</Pill>
                     <ChevronRight size={20} color={colors.earthSoft} strokeWidth={2.4} />
                   </div>
                 </Card>

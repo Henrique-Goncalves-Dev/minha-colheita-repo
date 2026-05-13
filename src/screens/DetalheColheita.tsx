@@ -1,36 +1,38 @@
-import React from "react";
 import { Calendar, Package, Wallet, CheckCircle } from "lucide-react";
 import { Card, HeaderBar, Pill, SectionLabel, colors } from "../agro-ui";
+import type { VendaResponse } from "../services/api";
 
-export function DetalheColheita({ 
-  semente, 
-  onBack, 
-  onSpeak 
-}: { 
-  semente: any; 
-  onBack: () => void; 
-  onSpeak: (t: string) => void; 
+export function DetalheColheita({
+  venda,
+  onBack,
+  onSpeak,
+}: {
+  venda: VendaResponse | null;
+  onBack: () => void;
+  onSpeak: (t: string) => void;
 }) {
-  if (!semente) return null;
+  if (!venda) return null;
 
-  const quantidade = semente.quantidadeReal || "Não informado";
-  const custo = semente.custoReal ? `R$ ${semente.custoReal}` : "R$ 0,00";
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "Sem data";
+    return new Date(dateStr).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).replace(".", "");
+  };
 
   return (
     <div className="min-h-full flex flex-col" style={{ background: colors.cream, paddingBottom: 24 }}>
       <HeaderBar
-        title="Histórico"
-        subtitle="Colheita Finalizada"
+        title="Detalhes"
+        subtitle="Venda Registrada"
         onBack={onBack}
         onVoice={() =>
           onSpeak(
-            `Histórico de ${semente.name}. Plantado em ${semente.planted} e colhido com sucesso em ${semente.dataColheita}. Você plantou ${quantidade} e gastou ${custo}.`
+            `Venda de ${venda.nome_semente}. ${venda.quantidade} unidades vendidas por R$ ${venda.valor_recebido.toFixed(2)} em ${formatDate(venda.data_da_compra)}.`
           )
         }
       />
 
       <div className="p-4 space-y-4">
-        {/* Hero card com a foto */}
+        {/* Hero card */}
         <div
           style={{
             position: "relative",
@@ -63,7 +65,7 @@ export function DetalheColheita({
           >
             <div className="flex justify-between items-start">
               <Pill tone="gold" style={{ background: "#E8A020", color: "white", border: "none" }}>
-                🏆 Colhido
+                💰 Vendido
               </Pill>
               <div
                 className="flex items-center justify-center"
@@ -77,21 +79,21 @@ export function DetalheColheita({
                   fontSize: 32,
                 }}
               >
-                {semente.emoji}
+                🌾
               </div>
             </div>
             <div>
               <p style={{ opacity: 0.85, fontSize: 12, fontWeight: 800, letterSpacing: 0.4, textTransform: "uppercase" }}>
-                Fruto colhido
+                Semente vendida
               </p>
               <p style={{ fontFamily: "Nunito", fontWeight: 900, fontSize: 32, letterSpacing: -0.5 }}>
-                {semente.name}
+                {venda.nome_semente}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Card de Conclusão */}
+        {/* Conclusion Card */}
         <Card style={{ padding: 16, background: "#E0F2D9", border: "1px solid #C4E6B3" }} elevated>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -100,10 +102,10 @@ export function DetalheColheita({
               </div>
               <div>
                 <p style={{ fontFamily: "Nunito", fontWeight: 900, color: colors.forestDeep, fontSize: 16 }}>
-                  Colheita Registrada
+                  Venda Registrada
                 </p>
                 <p style={{ color: colors.earth, fontSize: 13, fontWeight: 800 }}>
-                  Em {semente.dataColheita}
+                  Em {formatDate(venda.data_da_compra)}
                 </p>
               </div>
             </div>
@@ -113,8 +115,8 @@ export function DetalheColheita({
         <SectionLabel>Detalhes do registro</SectionLabel>
 
         <div className="grid grid-cols-2 gap-3">
-          <InfoCard icon={<Calendar size={20} color={colors.field} />} label="Quando plantou" value={semente.planted} />
-          <InfoCard icon={<Package size={20} color={colors.field} />} label="Quanto plantou" value={quantidade} />
+          <InfoCard icon={<Calendar size={20} color={colors.field} />} label="Quando vendeu" value={formatDate(venda.data_da_compra)} />
+          <InfoCard icon={<Package size={20} color={colors.field} />} label="Quantidade" value={`${venda.quantidade} un`} />
         </div>
 
         <Card style={{ padding: 16, display: "flex", alignItems: "center", gap: 14 }} elevated>
@@ -124,26 +126,26 @@ export function DetalheColheita({
               width: 52,
               height: 52,
               borderRadius: 14,
-              background: "#FDECEC",
-              border: `1px solid #F8D5D5`,
+              background: "#E0F2D9",
+              border: `1px solid #C4E6B3`,
             }}
           >
-            <Wallet size={24} color={colors.alert} strokeWidth={2.4} />
+            <Wallet size={24} color={colors.field} strokeWidth={2.4} />
           </div>
           <div className="flex-1">
             <p style={{ color: colors.earthSoft, fontSize: 12, fontWeight: 800, letterSpacing: 0.3 }}>
-              CUSTO TOTAL
+              VALOR RECEBIDO
             </p>
             <p
               style={{
                 fontFamily: "Nunito",
                 fontWeight: 900,
-                color: colors.alert,
+                color: colors.field,
                 fontSize: 24,
                 letterSpacing: -0.5,
               }}
             >
-              {custo}
+              R$ {venda.valor_recebido.toFixed(2)}
             </p>
           </div>
         </Card>

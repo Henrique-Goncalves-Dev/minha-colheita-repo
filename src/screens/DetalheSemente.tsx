@@ -1,39 +1,36 @@
-import React from "react";
-import { ArrowLeft, Volume2, TrendingUp, Calendar, Package, Wallet, CheckCircle } from "lucide-react";
+import { ArrowLeft, Volume2, TrendingUp, Calendar, Package, Wallet, ShoppingCart } from "lucide-react";
 import { Card, colors } from "../agro-ui";
+import type { PlantioResponse } from "../services/api";
 
 export function DetalheSemente({
-  semente,
+  plantio,
   onBack,
   onSpeak,
-  onHarvest,
+  onSell,
 }: {
-  semente: any;
+  plantio: PlantioResponse | null;
   onBack: () => void;
   onSpeak: (t: string) => void;
-  onHarvest: (semente: any) => void;
+  onSell: () => void;
 }) {
-  // Se por acaso a tela carregar sem semente, volta.
-  if (!semente) return null;
+  if (!plantio) return null;
 
-  const porcentagem = Math.max(15, 100 - semente.days);
-  const quantidade = semente.quantidadeReal || "Não informado";
-  const custo = semente.custoReal ? `R$ ${semente.custoReal}` : "R$ 0,00";
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "Sem data";
+    return new Date(dateStr).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).replace(".", "");
+  };
 
   const explicarTela = () => {
-    let texto = `Detalhes do plantio de ${semente.name}. `;
-    if (semente.ready) {
-      texto += "A plantação está pronta para colher! Aperte o botão verde no final da tela para confirmar a colheita. ";
-    } else {
-      texto += `Em crescimento. Faltam aproximadamente ${semente.days} dias. `;
-    }
-    texto += `Você plantou em ${semente.planted}. Quantidade: ${quantidade}. Custo: ${custo}.`;
+    let texto = `Detalhes do plantio de ${plantio.nome_semente}. `;
+    texto += `Quantidade: ${plantio.quantidade} unidades. `;
+    texto += `Custo: R$ ${plantio.custo.toFixed(2)}. `;
+    texto += `Plantado em ${formatDate(plantio.data_plantacao)}.`;
     onSpeak(texto);
   };
 
   return (
     <div className="min-h-full flex flex-col" style={{ background: colors.cream, paddingBottom: 24 }}>
-      {/* Cabeçalho com Imagem de Fundo */}
+      {/* Header with Background */}
       <div
         style={{
           position: "relative",
@@ -45,7 +42,6 @@ export function DetalheSemente({
           backgroundPosition: "center",
         }}
       >
-        {/* Barra de Navegação Superior */}
         <div className="flex items-center justify-between mb-8 relative z-10">
           <button type="button"
             onClick={onBack}
@@ -63,15 +59,14 @@ export function DetalheSemente({
           </button>
         </div>
 
-        {/* Informações Principais da Semente */}
         <div className="flex justify-between items-start mb-6 relative z-10">
           <div
             style={{
               padding: "4px 12px",
               borderRadius: 999,
               background: "rgba(255, 255, 255, 0.9)",
-              border: `1.5px solid ${semente.ready ? colors.field : "#E8A020"}`,
-              color: semente.ready ? colors.field : "#C48000",
+              border: `1.5px solid ${colors.field}`,
+              color: colors.field,
               fontWeight: 900,
               fontSize: 12,
               display: "flex",
@@ -79,7 +74,7 @@ export function DetalheSemente({
               gap: 6,
             }}
           >
-            {semente.ready ? "✅ Pronto" : "🌾 Em crescimento"}
+            🌱 Em crescimento
           </div>
           <div
             className="flex items-center justify-center shadow-lg"
@@ -93,7 +88,7 @@ export function DetalheSemente({
               fontSize: 32,
             }}
           >
-            {semente.emoji}
+            🌱
           </div>
         </div>
 
@@ -102,18 +97,18 @@ export function DetalheSemente({
             Semente Plantada
           </p>
           <h1 style={{ fontFamily: "serif", fontWeight: 900, fontSize: 36, color: "white", marginTop: 4 }}>
-            {semente.name}
+            {plantio.nome_semente}
           </h1>
         </div>
       </div>
 
       <div className="p-4 space-y-4 -mt-6 relative z-20">
-        {/* Card de Progresso */}
+        {/* Progress Card */}
         <Card style={{ padding: 16 }} elevated>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2" style={{ color: colors.ink, fontWeight: 900 }}>
               <TrendingUp size={20} color={colors.field} strokeWidth={2.5} />
-              Progresso até a colheita
+              Informações do plantio
             </div>
             <div
               style={{
@@ -125,25 +120,11 @@ export function DetalheSemente({
                 fontSize: 12,
               }}
             >
-              {semente.ready ? "100%" : `${porcentagem}%`}
+              {plantio.quantidade} un
             </div>
           </div>
-
-          <div style={{ height: 10, background: colors.wash, borderRadius: 999, overflow: "hidden", marginBottom: 12 }}>
-            <div
-              style={{
-                width: semente.ready ? "100%" : `${porcentagem}%`,
-                height: "100%",
-                background: semente.ready ? colors.field : colors.field,
-                borderRadius: 999,
-              }}
-            />
-          </div>
-
           <p style={{ textAlign: "center", color: colors.earth, fontSize: 13, fontWeight: 800 }}>
-            {semente.ready ? "Pronto para colher!" : (
-              <>Faltam aproximadamente <span style={{ color: colors.ink }}>{semente.days} dias</span></>
-            )}
+            Estoque atual: <span style={{ color: colors.ink }}>{plantio.quantidade} unidades</span>
           </p>
         </Card>
 
@@ -153,7 +134,7 @@ export function DetalheSemente({
           </p>
         </div>
 
-        {/* Grid de Detalhes: Data e Quantidade */}
+        {/* Detail Grid */}
         <div className="grid grid-cols-2 gap-3">
           <Card style={{ padding: 16, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, background: colors.wash, display: "flex", alignItems: "center", justifyContent: "center", color: colors.field, marginBottom: 12, border: `1px solid ${colors.border}` }}>
@@ -163,7 +144,7 @@ export function DetalheSemente({
               QUANDO PLANTOU
             </p>
             <p style={{ fontFamily: "Nunito", fontWeight: 900, color: colors.ink, fontSize: 15 }}>
-              {semente.planted}
+              {formatDate(plantio.data_plantacao)}
             </p>
           </Card>
 
@@ -175,12 +156,12 @@ export function DetalheSemente({
               QUANTO PLANTOU
             </p>
             <p style={{ fontFamily: "Nunito", fontWeight: 900, color: colors.ink, fontSize: 15 }}>
-              {quantidade}
+              {plantio.quantidade} unidades
             </p>
           </Card>
         </div>
 
-        {/* Card de Custo */}
+        {/* Cost Card */}
         <Card style={{ padding: 16, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
           <div style={{ width: 48, height: 48, borderRadius: 12, background: "#FDECEC", display: "flex", alignItems: "center", justifyContent: "center", color: colors.alert, marginBottom: 12, border: `1px solid #F8D5D5` }}>
             <Wallet size={24} strokeWidth={2.5} />
@@ -189,17 +170,17 @@ export function DetalheSemente({
             QUANTO GASTOU
           </p>
           <p style={{ fontFamily: "serif", fontWeight: 900, color: colors.alert, fontSize: 24 }}>
-            {custo}
+            R$ {plantio.custo.toFixed(2)}
           </p>
         </Card>
 
-        {/* BOTÃO DE COLHER */}
-        {semente.ready && (
+        {/* Sell Button */}
+        {plantio.quantidade > 0 && (
           <button type="button"
-            onClick={() => onHarvest(semente)}
+            onClick={onSell}
             className="w-full flex items-center justify-center gap-2 active:scale-[0.98] transition-transform mt-4"
             style={{
-              background: `linear-gradient(180deg, #52B152 0%, #3D8B3D 100%)`,
+              background: `linear-gradient(180deg, ${colors.gold} 0%, ${colors.goldDeep} 100%)`,
               color: colors.white,
               height: 60,
               borderRadius: 16,
@@ -207,11 +188,11 @@ export function DetalheSemente({
               fontWeight: 900,
               fontSize: 16,
               letterSpacing: 0.3,
-              boxShadow: "0 8px 20px rgba(82,177,82,0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
+              boxShadow: "0 8px 20px rgba(232,160,32,0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
             }}
           >
-            <CheckCircle size={24} strokeWidth={2.5} />
-            CONFIRMAR COLHEITA
+            <ShoppingCart size={24} strokeWidth={2.5} />
+            REGISTRAR VENDA
           </button>
         )}
       </div>

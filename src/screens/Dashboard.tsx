@@ -1,30 +1,19 @@
 import { Sprout, Leaf, Wallet, CloudSun, ListChecks, UserRound, Volume2, Bell } from "lucide-react";
 import { colors } from "../agro-ui";
+import type { PerfilResponse, PlantioResponse, TarefaResponse } from "../services/api";
 
 export type ScreenKey = "plantio" | "plantacao" | "renda" | "clima" | "tarefas" | "perfil";
 
-const TILES: {
-  key: ScreenKey;
-  emoji: string;
-  label: string;
-  hint: string;
-  Icon: any;
-  dot?: "green" | "gold";
-}[] = [
-  { key: "plantacao", emoji: "🌿", label: "Plantação", hint: "5 sementes", Icon: Leaf },
-  { key: "plantio", emoji: "🌱", label: "Plantio", hint: "3 ativos", Icon: Sprout, dot: "green" },
-  { key: "renda", emoji: "💰", label: "Renda", hint: "+R$ 2.820", Icon: Wallet, dot: "gold" },
-  { key: "clima", emoji: "⛅", label: "Clima", hint: "28° hoje", Icon: CloudSun, dot: "gold" },
-  { key: "tarefas", emoji: "📋", label: "Tarefas", hint: "3 pendentes", Icon: ListChecks, dot: "green" },
-  { key: "perfil", emoji: "👤", label: "Perfil", hint: "Sua conta", Icon: UserRound },
-];
-
 export function Dashboard({
-  name,
+  perfil,
+  plantios,
+  tarefas,
   onOpen,
   onSpeak,
 }: {
-  name: string;
+  perfil: PerfilResponse | null;
+  plantios: PlantioResponse[];
+  tarefas: TarefaResponse[];
   onOpen: (s: ScreenKey) => void;
   onSpeak: () => void;
 }) {
@@ -33,6 +22,34 @@ export function Dashboard({
     day: "2-digit",
     month: "long",
   });
+
+  const nome = perfil?.nome?.split(" ")[0] || "Agricultor";
+  const totalPlantios = perfil?.total_plantios ?? 0;
+  const totalSementes = perfil?.total_sementes_plantadas ?? 0;
+  const totalArrecadado = perfil?.total_arrecadado ?? 0;
+  const totalVendas = perfil?.total_vendas ?? 0;
+  const tarefasPendentes = tarefas.filter(t => !t.concluida).length;
+
+  const formatCurrency = (v: number) => {
+    if (v >= 1000) return `R$ ${(v / 1000).toFixed(1)}k`;
+    return `R$ ${v.toLocaleString("pt-BR")}`;
+  };
+
+  const TILES: {
+    key: ScreenKey;
+    emoji: string;
+    label: string;
+    hint: string;
+    Icon: any;
+    dot?: "green" | "gold";
+  }[] = [
+    { key: "plantacao", emoji: "🌿", label: "Plantação", hint: `${plantios.length} sementes`, Icon: Leaf },
+    { key: "plantio", emoji: "🌱", label: "Plantio", hint: `${totalVendas} vendas`, Icon: Sprout, dot: totalVendas > 0 ? "green" : undefined },
+    { key: "renda", emoji: "💰", label: "Renda", hint: totalArrecadado > 0 ? `+${formatCurrency(totalArrecadado)}` : "Ver resumo", Icon: Wallet, dot: totalArrecadado > 0 ? "gold" : undefined },
+    { key: "clima", emoji: "⛅", label: "Clima", hint: "Previsão", Icon: CloudSun, dot: "gold" },
+    { key: "tarefas", emoji: "📋", label: "Tarefas", hint: `${tarefasPendentes} pendentes`, Icon: ListChecks, dot: tarefasPendentes > 0 ? "green" : undefined },
+    { key: "perfil", emoji: "👤", label: "Perfil", hint: "Sua conta", Icon: UserRound },
+  ];
 
   return (
     <div className="min-h-full" style={{ background: colors.cream }}>
@@ -72,7 +89,7 @@ export function Dashboard({
                 letterSpacing: -0.4,
               }}
             >
-              Bom dia, {name}
+              Bom dia, {nome}
             </h1>
           </div>
           <div className="flex items-center gap-2">
@@ -89,18 +106,20 @@ export function Dashboard({
               }}
             >
               <Bell size={18} strokeWidth={2.5} />
-              <span
-                style={{
-                  position: "absolute",
-                  top: 8,
-                  right: 9,
-                  width: 8,
-                  height: 8,
-                  borderRadius: 999,
-                  background: colors.gold,
-                  boxShadow: `0 0 0 2px ${colors.forestDeep}`,
-                }}
-              />
+              {tarefasPendentes > 0 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 8,
+                    right: 9,
+                    width: 8,
+                    height: 8,
+                    borderRadius: 999,
+                    background: colors.gold,
+                    boxShadow: `0 0 0 2px ${colors.forestDeep}`,
+                  }}
+                />
+              )}
             </button>
             <div
               className="flex items-center justify-center"
@@ -154,9 +173,9 @@ export function Dashboard({
       {/* Quick stat strip */}
       <div className="px-4 mt-4 grid grid-cols-3 gap-2">
         {[
-          { v: "3", l: "Plantios" },
-          { v: "5", l: "Sementes" },
-          { v: "R$ 2.8k", l: "Lucro" },
+          { v: String(totalPlantios), l: "Plantios" },
+          { v: String(totalSementes), l: "Sementes" },
+          { v: formatCurrency(totalArrecadado), l: "Arrecadado" },
         ].map((s) => (
           <div
             key={s.l}
