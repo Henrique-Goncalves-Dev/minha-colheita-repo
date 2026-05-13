@@ -1,14 +1,27 @@
 import { Volume2 } from 'lucide-react';
+import { speak, isTTSAvailable } from '../voice/tts';
 
 interface AudioButtonProps {
   variant?: 'pill' | 'circle';
   text?: string;
   onClick?: () => void;
   className?: string;
+  speakText?: string;
 }
 
-export function AudioButton({ variant = 'circle', text, onClick, className = '' }: AudioButtonProps) {
+export function AudioButton({ variant = 'circle', text, onClick, className = '', speakText }: AudioButtonProps) {
   const isPill = variant === 'pill';
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+      return;
+    }
+    const toSay = speakText ?? text;
+    if (toSay && isTTSAvailable()) {
+      void speak(toSay);
+    }
+  };
 
   return (
     <button type="button"
@@ -19,7 +32,7 @@ export function AudioButton({ variant = 'circle', text, onClick, className = '' 
     >
       <Volume2 size={isPill ? 28 : 24} strokeWidth={2.5} />
       {isPill && text && (
-        <span className="text-xl font-medium tracking-wide">||| {text}</span> // Simulando o ícone de onda sonora
+        <span className="text-xl font-medium tracking-wide">||| {text}</span>
       )}
     </button>
   );
